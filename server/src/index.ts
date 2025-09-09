@@ -4,10 +4,16 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
+// Import routers
+import authRoutes from './routes/auth.routes';
+import listenerRoutes from './routes/listeners.routes';
+import battleItemRoutes from './routes/battleItems.routes';
+import statsRoutes from './routes/stats.routes';
+
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5001;
 
 // Middleware
 app.use(helmet());
@@ -23,6 +29,12 @@ app.use(express.json());
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
+
+// Mount routers
+app.use('/api/auth', authRoutes);
+app.use('/api/listeners', listenerRoutes);
+app.use('/api/battle-items', battleItemRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Error handling
 app.use((err: any, req: any, res: any, next: any) => {
