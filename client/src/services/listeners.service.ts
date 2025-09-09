@@ -16,6 +16,14 @@ const listenerService = {
   createListener: (name: string) => {
     return apiClient.post<Listener>('/listeners', { name });
   },
+
+  updateListener: (id: number, name: string) => {
+    return apiClient.put<Listener>(`/listeners/${id}`, { name });
+  },
+
+  deleteListener: (id: number) => {
+    return apiClient.delete(`/listeners/${id}`);
+  },
 };
 
 export default listenerService;

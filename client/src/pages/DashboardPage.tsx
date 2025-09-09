@@ -5,12 +5,13 @@ import listenerService from '../services/listeners.service';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import ListenerListItem from '../components/listeners/ListenerListItem';
 
 // Form validation schema
-const schema = yup.object().shape({
+const createSchema = yup.object().shape({
   name: yup.string().required('Listener name is required'),
 });
-type FormData = yup.InferType<typeof schema>;
+type CreateFormData = yup.InferType<typeof createSchema>;
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
@@ -22,7 +23,7 @@ const DashboardPage = () => {
     queryFn: () => listenerService.getListeners().then(res => res.data),
   });
 
-  const mutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: (name: string) => listenerService.createListener(name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listeners'] });
@@ -30,12 +31,12 @@ const DashboardPage = () => {
   });
 
   // --- React Hook Form ---
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
-    resolver: yupResolver(schema),
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateFormData>({
+    resolver: yupResolver(createSchema),
   });
 
-  const onSubmit = (data: FormData) => {
-    mutation.mutate(data.name);
+  const onCreateSubmit = (data: CreateFormData) => {
+    createMutation.mutate(data.name);
     reset();
   };
 
@@ -61,7 +62,7 @@ const DashboardPage = () => {
           <div className="md:col-span-1">
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-medium text-gray-900">Add New Listener</h3>
-              <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
+              <form onSubmit={handleSubmit(onCreateSubmit)} className="mt-4 space-y-4">
                 <div>
                   <label htmlFor="name" className="sr-only">Listener Name</label>
                   <input
@@ -75,12 +76,12 @@ const DashboardPage = () => {
                 </div>
                 <button
                   type="submit"
-                  disabled={mutation.isPending}
+                  disabled={createMutation.isPending}
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
-                  {mutation.isPending ? 'Adding...' : 'Add Listener'}
+                  {createMutation.isPending ? 'Adding...' : 'Add Listener'}
                 </button>
-                {mutation.isError && <p className="mt-2 text-sm text-red-600">An error occurred: {mutation.error.message}</p>}
+                {createMutation.isError && <p className="mt-2 text-sm text-red-600">An error occurred: {createMutation.error.message}</p>}
               </form>
             </div>
           </div>
@@ -95,10 +96,7 @@ const DashboardPage = () => {
                 {listeners && listeners.length === 0 && <p className="text-gray-500">No listeners added yet.</p>}
                 <ul className="space-y-3">
                   {listeners?.map(listener => (
-                    <li key={listener.id} className="bg-gray-50 p-4 rounded-md shadow-sm flex justify-between items-center">
-                      <span className="font-medium text-gray-800">{listener.name}</span>
-                      {/* Action buttons can go here */}
-                    </li>
+                    <ListenerListItem key={listener.id} listener={listener} />
                   ))}
                 </ul>
               </div>
