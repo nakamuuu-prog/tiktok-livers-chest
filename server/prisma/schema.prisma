@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -38,6 +38,7 @@ model Listener {
   user        User         @relation(fields: [userId], references: [id])
   battleItems BattleItem[]
 
+  @@index([userId])
   @@map("listeners")
 }
 
@@ -52,6 +53,9 @@ model BattleItem {
 
   listener Listener @relation(fields: [listenerId], references: [id])
 
+  @@index([listenerId])
+  @@index([expiryDate])
+  @@index([itemType])
   @@map("battle_items")
 }
 
