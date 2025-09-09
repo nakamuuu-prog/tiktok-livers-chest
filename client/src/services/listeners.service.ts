@@ -24,6 +24,10 @@ const listenerService = {
   deleteListener: (id: number) => {
     return apiClient.delete(`/listeners/${id}`);
   },
+
+  getListenerById: (id: number) => {
+    return apiClient.get<Listener>(`/listeners/${id}`);
+  },
 };
 
 export default listenerService;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Listener } from '../../services/listeners.service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import listenerService from '../../services/listeners.service';
@@ -76,7 +77,9 @@ const ListenerListItem: React.FC<ListenerListItemProps> = ({ listener }) => {
 
   return (
     <li className="bg-gray-50 p-4 rounded-md shadow-sm flex justify-between items-center">
-      <span className="font-medium text-gray-800">{listener.name}</span>
+      <Link to={`/listeners/${listener.id}`} className="font-medium text-gray-800 hover:text-indigo-600">
+        {listener.name}
+      </Link>
       <div className="space-x-2">
         <button onClick={() => setIsEditing(true)} className="text-indigo-600 hover:text-indigo-900 text-sm">Edit</button>
         <button 

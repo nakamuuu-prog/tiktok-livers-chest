@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ListenerDetailPage from './pages/ListenerDetailPage';
 import reportWebVitals from './reportWebVitals';
 
 const queryClient = new QueryClient();
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <DashboardPage />,
+          },
+          {
+            path: '/listeners/:id',
+            element: <ListenerDetailPage />,
           },
           // Other protected routes can be added here
         ],
