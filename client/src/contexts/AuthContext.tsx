@@ -28,22 +28,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const verifyToken = async () => {
-      if (token) {
+      // The token is read from localStorage by the axios interceptor
+      if (localStorage.getItem('token')) {
         try {
-          const response = await authService.getMe(token);
+          const response = await authService.getMe();
           setUser(response.data);
         } catch (error) {
           console.error('Token verification failed', error);
-          localStorage.removeItem('token');
-          setToken(null);
-          setUser(null);
+          // Clear stored token if it's invalid
+          logout(); 
         }
       }
       setIsLoading(false);
     };
 
     verifyToken();
-  }, [token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on initial load
 
   const login = async (username: string, password: string) => {
     const response = await authService.login(username, password);
