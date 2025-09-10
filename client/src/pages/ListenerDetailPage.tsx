@@ -68,10 +68,15 @@ const ListenerDetailPage = () => {
 
   const sortedBattleItems = React.useMemo(() => {
     if (!battleItems) return [];
-    return [...battleItems].sort(
-      (a, b) =>
-        new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
-    );
+    const now = new Date();
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+    return battleItems
+      .filter((item) => new Date(item.expiryDate) > threeDaysAgo) // 3日以上過ぎたアイテムを非表示
+      .sort(
+        (a, b) =>
+          new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
+      );
   }, [battleItems]);
 
   // --- Mutations ---
@@ -282,39 +287,50 @@ const ListenerDetailPage = () => {
             </h3>
             {isLoadingItems && <p>アイテムを読み込み中...</p>}
             <ul className='space-y-3'>
-              {sortedBattleItems.map((item) => (
-                <li
-                  key={item.id}
-                  className='bg-gray-50 p-3 rounded-md flex justify-between items-center'
-                >
-                  <div>
-                    <span className='font-medium text-gray-800'>
-                      {itemTranslations[item.itemType]}
-                    </span>
-                    <p className='text-sm text-gray-500'>
-                      有効期限:{' '}
-                      {format(new Date(item.expiryDate), 'yyyy/MM/dd HH:mm', {
-                        locale: ja,
-                      })}
-                    </p>
-                  </div>
-                  <div className='space-x-2'>
-                    <button
-                      onClick={() => handleEditClick(item)}
-                      className='text-indigo-600 hover:text-indigo-900 text-sm'
-                    >
-                      編集
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(item.id)}
-                      disabled={deleteItemMutation.isPending}
-                      className='text-red-600 hover:text-red-900 text-sm disabled:opacity-50'
-                    >
-                      削除
-                    </button>
-                  </div>
-                </li>
-              ))}
+              {sortedBattleItems.map((item) => {
+                const isExpired = new Date(item.expiryDate) < new Date();
+                return (
+                  <li
+                    key={item.id}
+                    className={`p-3 rounded-md flex justify-between items-center ${
+                      isExpired ? 'bg-red-100' : 'bg-gray-50'
+                    }`}
+                  >
+                    <div>
+                      <span className='font-medium text-gray-800'>
+                        {itemTranslations[item.itemType]}
+                      </span>
+                      <p
+                        className={`text-sm ${
+                          isExpired
+                            ? 'text-red-700 font-medium'
+                            : 'text-gray-500'
+                        }`}
+                      >
+                        有効期限:{' '}
+                        {format(new Date(item.expiryDate), 'yyyy/MM/dd HH:mm', {
+                          locale: ja,
+                        })}
+                      </p>
+                    </div>
+                    <div className='space-x-2'>
+                      <button
+                        onClick={() => handleEditClick(item)}
+                        className='text-indigo-600 hover:text-indigo-900 text-sm'
+                      >
+                        編集
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(item.id)}
+                        disabled={deleteItemMutation.isPending}
+                        className='text-red-600 hover:text-red-900 text-sm disabled:opacity-50'
+                      >
+                        削除
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
               {battleItems?.length === 0 && (
                 <p className='text-gray-500'>
                   所持しているアイテムはありません。
