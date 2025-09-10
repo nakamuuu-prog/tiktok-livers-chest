@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -38,14 +38,26 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<FormData>({
     resolver: yupResolver(schema),
-    defaultValues: {
-      itemType: item.itemType,
-      expiryDate: new Date(item.expiryDate).toISOString().split('T')[0],
-      expiryHour: new Date(item.expiryDate).getHours(),
-    },
   });
+
+  useEffect(() => {
+    if (item) {
+      reset({
+        itemType: item.itemType,
+        expiryDate: (() => {
+          const d = new Date(item.expiryDate);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        })(),
+        expiryHour: new Date(item.expiryDate).getHours(),
+      });
+    }
+  }, [item, reset, isOpen]);
 
   const onSubmit = (data: FormData) => {
     const combinedDate = new Date(data.expiryDate);
