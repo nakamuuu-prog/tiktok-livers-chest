@@ -51,7 +51,7 @@ model BattleItem {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  listener Listener @relation(fields: [listenerId], references: [id])
+  listener Listener @relation(fields: [listenerId], references: [id], onDelete: Cascade)
 
   @@index([listenerId])
   @@index([expiryDate])
