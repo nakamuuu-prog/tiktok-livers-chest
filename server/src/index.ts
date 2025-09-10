@@ -35,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/listeners', listenerRoutes);
 app.use('/api/battle-items', battleItemRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Error handling
 app.use((err: any, req: any, res: any, next: any) => {

@@ -9,7 +9,9 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import MainLayout from './components/common/MainLayout';
 import ListenerDetailPage from './pages/ListenerDetailPage';
+import ListenersPage from './pages/ListenersPage';
 import reportWebVitals from './reportWebVitals';
 
 const queryClient = new QueryClient();
@@ -17,20 +19,23 @@ const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: <ProtectedRoute />,
     children: [
       {
-        element: <ProtectedRoute />,
+        element: <MainLayout />,
         children: [
           {
             index: true,
             element: <DashboardPage />,
           },
           {
+            path: '/listeners',
+            element: <ListenersPage />,
+          },
+          {
             path: '/listeners/:id',
             element: <ListenerDetailPage />,
           },
-          // Other protected routes can be added here
         ],
       },
     ],
