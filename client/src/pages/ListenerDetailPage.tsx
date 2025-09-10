@@ -144,8 +144,11 @@ const ListenerDetailPage = () => {
     <div className='min-h-screen bg-gray-50 p-8'>
       <div className='max-w-4xl mx-auto'>
         <div className='mb-4'>
-          <Link to='/' className='text-indigo-600 hover:text-indigo-900'>
-            &larr; Back to Dashboard
+          <Link
+            to='/listeners'
+            className='text-indigo-600 hover:text-indigo-900'
+          >
+            &larr; リスナー一覧に戻る
           </Link>
         </div>
         <div className='bg-white shadow rounded-lg p-6 mb-6'>
