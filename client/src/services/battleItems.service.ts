@@ -1,6 +1,5 @@
 import apiClient from '../lib/axios';
 
-// This should match the prisma schema enum
 export enum ItemType {
   GLOVE = 'GLOVE',
   STUN_HAMMER = 'STUN_HAMMER',
@@ -26,6 +25,11 @@ interface CreateBattleItemPayload {
   expiryDate: string; // e.g., 'YYYY-MM-DDTHH:mm:ss.sssZ'
 }
 
+interface UpdateBattleItemPayload {
+  itemType: ItemType;
+  expiryDate: string;
+}
+
 const battleItemService = {
   getItemsForListener: (listenerId: number) => {
     return apiClient.get<BattleItem[]>(`/listeners/${listenerId}/items`);
@@ -33,6 +37,14 @@ const battleItemService = {
 
   createBattleItem: (payload: CreateBattleItemPayload) => {
     return apiClient.post<BattleItem>('/battle-items', payload);
+  },
+
+  updateBattleItem: (id: number, payload: UpdateBattleItemPayload) => {
+    return apiClient.put<BattleItem>(`/battle-items/${id}`, payload);
+  },
+
+  deleteBattleItem: (id: number) => {
+    return apiClient.delete(`/battle-items/${id}`);
   },
 };
 
