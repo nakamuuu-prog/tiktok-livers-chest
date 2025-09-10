@@ -5,14 +5,35 @@ import prisma from '../utils/prisma';
 // @route   GET /api/listeners
 // @access  Private
 export const getAllListeners = async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  // @ts-ignore
+  const userId = req.user.id;
 
   try {
     const listeners = await prisma.listener.findMany({
       where: { userId },
+      include: {
+        battleItems: {
+          where: {
+            expiryDate: {
+              gte: new Date(),
+            },
+          },
+          orderBy: {
+            expiryDate: 'asc',
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
-    res.status(200).json(listeners);
+
+    const listenersWithItems = listeners.map((listener) => {
+      return {
+        ...listener,
+        activeItemCount: listener.battleItems.length,
+      };
+    });
+
+    res.status(200).json(listenersWithItems);
   } catch (error) {
     console.error('Error fetching listeners:', error);
     res.status(500).json({ message: 'Internal server error' });

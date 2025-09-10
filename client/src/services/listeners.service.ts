@@ -1,3 +1,4 @@
+import { BattleItem } from './battleItems.service';
 import apiClient from '../lib/axios';
 
 export interface Listener {
@@ -6,6 +7,8 @@ export interface Listener {
   userId: number;
   createdAt: string;
   updatedAt: string;
+  activeItemCount: number;
+  battleItems: BattleItem[];
 }
 
 const listenerService = {
