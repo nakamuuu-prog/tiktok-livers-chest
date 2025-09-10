@@ -12,13 +12,26 @@ interface EditItemModalProps {
   isUpdating: boolean;
 }
 
+const itemTranslations: { [key in ItemType]: string } = {
+  [ItemType.GLOVE]: 'グローブ',
+  [ItemType.STUN_HAMMER]: 'スタンハンマー',
+  [ItemType.MIST]: 'ミスト',
+  [ItemType.TIME]: 'タイム',
+  [ItemType.SECOND_BOOSTER]: '2位ブースター',
+  [ItemType.THIRD_BOOSTER]: '3位ブースター',
+};
+
 const schema = yup.object().shape({
   itemType: yup
     .string()
     .oneOf(Object.values(ItemType))
-    .required('Item type is required'),
-  expiryDate: yup.string().required('Expiry date is required'),
-  expiryHour: yup.number().min(0).max(23).required('Expiry hour is required'),
+    .required('アイテム種別は必須です'),
+  expiryDate: yup.string().required('有効期限日は必須です'),
+  expiryHour: yup
+    .number()
+    .min(0, '0以上の値を入力してください')
+    .max(23, '23以下の値を入力してください')
+    .required('有効期限時刻は必須です'),
 });
 
 interface FormData {
@@ -74,7 +87,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
     <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
       <div className='bg-white rounded-lg shadow-xl p-6 w-full max-w-md'>
         <h3 className='text-lg font-medium text-gray-900 mb-4'>
-          Edit Battle Item
+          バトルアイテムを編集
         </h3>
         <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
           <div>
@@ -82,7 +95,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
               htmlFor='edit-itemType'
               className='block text-sm font-medium text-gray-700'
             >
-              Item Type
+              アイテム種別
             </label>
             <select
               id='edit-itemType'
@@ -93,7 +106,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
             >
               {Object.values(ItemType).map((type) => (
                 <option key={type} value={type}>
-                  {type.replace(/_/g, ' ').toLowerCase()}
+                  {itemTranslations[type]}
                 </option>
               ))}
             </select>
@@ -109,7 +122,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
                 htmlFor='edit-expiryDate'
                 className='block text-sm font-medium text-gray-700'
               >
-                Expiry Date
+                有効期限
               </label>
               <input
                 type='date'
@@ -130,7 +143,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
                 htmlFor='edit-expiryHour'
                 className='block text-sm font-medium text-gray-700'
               >
-                Hour
+                時刻
               </label>
               <select
                 id='edit-expiryHour'
@@ -158,14 +171,14 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
               onClick={onClose}
               className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200'
             >
-              Cancel
+              キャンセル
             </button>
             <button
               type='submit'
               disabled={isUpdating}
               className='px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50'
             >
-              {isUpdating ? 'Updating...' : 'Update Item'}
+              {isUpdating ? '更新中...' : '更新'}
             </button>
           </div>
         </form>

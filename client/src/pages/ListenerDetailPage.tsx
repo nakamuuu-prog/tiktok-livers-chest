@@ -10,15 +10,31 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import EditItemModal from '../components/items/EditItemModal';
+import { format } from 'date-fns';
+import { ja } from 'date-fns/locale';
+
+// --- アイテム種別の日本語訳 ---
+const itemTranslations: { [key in ItemType]: string } = {
+  [ItemType.GLOVE]: 'グローブ',
+  [ItemType.STUN_HAMMER]: 'スタンハンマー',
+  [ItemType.MIST]: 'ミスト',
+  [ItemType.TIME]: 'タイム',
+  [ItemType.SECOND_BOOSTER]: '2位ブースター',
+  [ItemType.THIRD_BOOSTER]: '3位ブースター',
+};
 
 // --- Form Validation Schema ---
 const schema = yup.object().shape({
   itemType: yup
     .string()
     .oneOf(Object.values(ItemType))
-    .required('Item type is required'),
-  expiryDate: yup.string().required('Expiry date is required'),
-  expiryHour: yup.number().min(0).max(23).required('Expiry hour is required'),
+    .required('アイテム種別は必須です'),
+  expiryDate: yup.string().required('有効期限日は必須です'),
+  expiryHour: yup
+    .number()
+    .min(0, '0以上の値を入力してください')
+    .max(23, '23以下の値を入力してください')
+    .required('有効期限時刻は必須です'),
 });
 
 interface FormData {
@@ -67,6 +83,7 @@ const ListenerDetailPage = () => {
     }) => battleItemService.createBattleItem(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battleItems', listenerId] });
+      queryClient.invalidateQueries({ queryKey: ['listeners'] }); // リスナー一覧のデータも更新
     },
   });
 
@@ -82,6 +99,7 @@ const ListenerDetailPage = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battleItems', listenerId] });
+      queryClient.invalidateQueries({ queryKey: ['listeners'] }); // リスナー一覧のデータも更新
       setIsEditModalOpen(false);
       setSelectedItem(null);
     },
@@ -91,6 +109,7 @@ const ListenerDetailPage = () => {
     mutationFn: (id: number) => battleItemService.deleteBattleItem(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battleItems', listenerId] });
+      queryClient.invalidateQueries({ queryKey: ['listeners'] }); // リスナー一覧のデータも更新
     },
   });
 
@@ -132,13 +151,13 @@ const ListenerDetailPage = () => {
   };
 
   const handleDeleteClick = (itemId: number) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
+    if (window.confirm('このアイテムを削除してもよろしいですか？')) {
       deleteItemMutation.mutate(itemId);
     }
   };
 
   // --- Render ---
-  if (isLoadingListener) return <p>Loading listener details...</p>;
+  if (isLoadingListener) return <p>リスナー情報を読み込み中...</p>;
 
   return (
     <div className='min-h-screen bg-gray-50 p-8'>
@@ -160,7 +179,7 @@ const ListenerDetailPage = () => {
               <p className='mt-2 text-sm text-gray-500'>ID: {listener.id}</p>
             </div>
           ) : (
-            <p>Listener not found.</p>
+            <p>リスナーが見つかりません。</p>
           )}
         </div>
 
@@ -168,7 +187,7 @@ const ListenerDetailPage = () => {
           {/* Add Item Form */}
           <div className='bg-white shadow rounded-lg p-6'>
             <h3 className='text-lg font-medium text-gray-900 mb-4'>
-              Add Battle Item
+              バトルアイテムを追加
             </h3>
             <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
               <div>
@@ -176,7 +195,7 @@ const ListenerDetailPage = () => {
                   htmlFor='itemType'
                   className='block text-sm font-medium text-gray-700'
                 >
-                  Item Type
+                  アイテム種別
                 </label>
                 <select
                   id='itemType'
@@ -187,7 +206,7 @@ const ListenerDetailPage = () => {
                 >
                   {Object.values(ItemType).map((type) => (
                     <option key={type} value={type}>
-                      {type.replace(/_/g, ' ').toLowerCase()}
+                      {itemTranslations[type]}
                     </option>
                   ))}
                 </select>
@@ -203,7 +222,7 @@ const ListenerDetailPage = () => {
                     htmlFor='expiryDate'
                     className='block text-sm font-medium text-gray-700'
                   >
-                    Expiry Date
+                    有効期限
                   </label>
                   <input
                     type='date'
@@ -224,7 +243,7 @@ const ListenerDetailPage = () => {
                     htmlFor='expiryHour'
                     className='block text-sm font-medium text-gray-700'
                   >
-                    Hour
+                    時刻
                   </label>
                   <select
                     id='expiryHour'
@@ -251,7 +270,7 @@ const ListenerDetailPage = () => {
                 disabled={createItemMutation.isPending}
                 className='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50'
               >
-                {createItemMutation.isPending ? 'Adding...' : 'Add Item'}
+                {createItemMutation.isPending ? '追加中...' : 'アイテムを追加'}
               </button>
             </form>
           </div>
@@ -259,9 +278,9 @@ const ListenerDetailPage = () => {
           {/* Items List */}
           <div className='bg-white shadow rounded-lg p-6'>
             <h3 className='text-lg font-medium text-gray-900 mb-4'>
-              Owned Items
+              所持アイテム一覧
             </h3>
-            {isLoadingItems && <p>Loading items...</p>}
+            {isLoadingItems && <p>アイテムを読み込み中...</p>}
             <ul className='space-y-3'>
               {sortedBattleItems.map((item) => (
                 <li
@@ -270,10 +289,13 @@ const ListenerDetailPage = () => {
                 >
                   <div>
                     <span className='font-medium text-gray-800'>
-                      {item.itemType.replace(/_/g, ' ').toLowerCase()}
+                      {itemTranslations[item.itemType]}
                     </span>
                     <p className='text-sm text-gray-500'>
-                      Expires: {new Date(item.expiryDate).toLocaleString()}
+                      有効期限:{' '}
+                      {format(new Date(item.expiryDate), 'yyyy/MM/dd HH:mm', {
+                        locale: ja,
+                      })}
                     </p>
                   </div>
                   <div className='space-x-2'>
@@ -281,20 +303,22 @@ const ListenerDetailPage = () => {
                       onClick={() => handleEditClick(item)}
                       className='text-indigo-600 hover:text-indigo-900 text-sm'
                     >
-                      Edit
+                      編集
                     </button>
                     <button
                       onClick={() => handleDeleteClick(item.id)}
                       disabled={deleteItemMutation.isPending}
                       className='text-red-600 hover:text-red-900 text-sm disabled:opacity-50'
                     >
-                      Delete
+                      削除
                     </button>
                   </div>
                 </li>
               ))}
               {battleItems?.length === 0 && (
-                <p className='text-gray-500'>No items owned.</p>
+                <p className='text-gray-500'>
+                  所持しているアイテムはありません。
+                </p>
               )}
             </ul>
           </div>
