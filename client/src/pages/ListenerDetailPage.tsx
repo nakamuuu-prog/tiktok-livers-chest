@@ -50,6 +50,14 @@ const ListenerDetailPage = () => {
     enabled: !!listenerId,
   });
 
+  const sortedBattleItems = React.useMemo(() => {
+    if (!battleItems) return [];
+    return [...battleItems].sort(
+      (a, b) =>
+        new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
+    );
+  }, [battleItems]);
+
   // --- Mutations ---
   const createItemMutation = useMutation({
     mutationFn: (data: {
@@ -252,7 +260,7 @@ const ListenerDetailPage = () => {
             </h3>
             {isLoadingItems && <p>Loading items...</p>}
             <ul className='space-y-3'>
-              {battleItems?.map((item) => (
+              {sortedBattleItems.map((item) => (
                 <li
                   key={item.id}
                   className='bg-gray-50 p-3 rounded-md flex justify-between items-center'
