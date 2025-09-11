@@ -34,7 +34,7 @@ const deleteOldItemsJob = cron.schedule('0 3 * * *', async () => {
     const result = await prisma.battleItem.deleteMany({
       where: {
         isExpired: true,
-        updatedAt: {
+        expiryDate: {
           lt: threeDaysAgo, // updated more than 3 days ago
         },
       },
