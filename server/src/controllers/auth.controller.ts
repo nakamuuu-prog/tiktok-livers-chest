@@ -26,11 +26,18 @@ export const checkUsername = async (req: Request, res: Response) => {
     }
 
     // 2. Check if user has already completed registration
+    if (preRegisteredUser.isRegistered) {
+      return res
+        .status(409)
+        .json({ message: 'This username is already registered.' });
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: { username },
     });
 
     if (existingUser) {
+      // This case should ideally not be hit if the preRegisteredUser.isRegistered check is robust
       return res
         .status(409)
         .json({ message: 'This username is already registered.' });
@@ -72,8 +79,16 @@ export const register = async (req: Request, res: Response) => {
         .json({ message: 'This username is not permitted to register.' });
     }
 
+    // Check if already registered through the pre-registration entry
+    if (preRegisteredUser.isRegistered) {
+      return res
+        .status(409)
+        .json({ message: 'This username is already registered.' });
+    }
+
     const existingUser = await prisma.user.findUnique({ where: { username } });
     if (existingUser) {
+      // This case should ideally not be hit if the preRegisteredUser.isRegistered check is robust
       return res
         .status(409)
         .json({ message: 'This username is already taken.' });
@@ -91,9 +106,21 @@ export const register = async (req: Request, res: Response) => {
       },
     });
 
+    // Update the pre-registered user entry
+    await prisma.preRegisteredUser.update({
+      where: {
+        username,
+      },
+      data: {
+        isRegistered: true,
+        registeredAt: new Date(),
+        userId: user.id,
+      },
+    });
+
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id, username: user.username },
+      { userId: user.id, username: user.username, isAdmin: user.isAdmin },
       JWT_SECRET,
       { expiresIn: '24h' }
     );

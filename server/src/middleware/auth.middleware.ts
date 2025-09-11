@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-default-secret';
 declare global {
   namespace Express {
     interface Request {
-      user?: { userId: number; username: string };
+      user?: { userId: number; username: string; isAdmin: boolean };
     }
   }
 }

@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
-import App from './App';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
 import MainLayout from './components/common/MainLayout';
 import ListenerDetailPage from './pages/ListenerDetailPage';
 import ListenersPage from './pages/ListenersPage';
@@ -27,42 +27,30 @@ const router = createBrowserRouter([
       {
         element: <MainLayout />,
         children: [
-          {
-            path: '/dashboard',
-            element: <DashboardPage />,
-          },
-          {
-            path: '/listeners',
-            element: <ListenersPage />,
-          },
-          {
-            path: '/listeners/:id',
-            element: <ListenerDetailPage />,
-          },
-          {
-            path: '/admin',
-            element: <AdminDashboardPage />,
-          },
-          {
-            path: '/admin/pre-registered-users',
-            element: <PreRegisteredUsersPage />,
-          },
-          {
-            path: '/admin/users',
-            element: <UserManagementPage />,
-          },
+          { path: 'dashboard', element: <DashboardPage /> },
+          { path: 'listeners', element: <ListenersPage /> },
+          { path: 'listeners/:id', element: <ListenerDetailPage /> },
+          { index: true, element: <Navigate to="/dashboard" replace /> }
         ],
       },
     ],
   },
   {
-    path: '/login',
-    element: <LoginPage />,
+    path: '/admin',
+    element: <AdminRoute />,
+    children: [
+        {
+            element: <MainLayout />,
+            children: [
+                { index: true, element: <AdminDashboardPage /> },
+                { path: 'pre-registered-users', element: <PreRegisteredUsersPage /> },
+                { path: 'users', element: <UserManagementPage /> },
+            ]
+        }
+    ]
   },
-  {
-    path: '/register',
-    element: <RegisterPage />,
-  },
+  { path: '/login', element: <LoginPage /> },
+  { path: '/register', element: <RegisterPage /> },
 ]);
 
 const root = ReactDOM.createRoot(
