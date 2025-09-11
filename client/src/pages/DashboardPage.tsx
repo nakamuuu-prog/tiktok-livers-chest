@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { getDashboardStats, getItemsSummary } from '../services/stats.service';
 import StatCard from '../components/dashboard/StatCard';
 import ItemSummaryChart from '../components/dashboard/ItemSummaryChart';
-import { FaUsers, FaBoxOpen, FaClock } from 'react-icons/fa';
-// import ListenerList from '../components/listeners/ListenerList'; // Assuming you have this component
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
+import { AlertTriangle, ArrowRight, Users, Box, Clock } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -25,41 +28,62 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className='container mx-auto p-4'>
-      <h1 className='text-2xl font-bold mb-4'>ダッシュボード</h1>
-      <p className='mb-6'>ようこそ、{user?.username}さん</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+        <div>
+          <h1 className='text-3xl font-bold tracking-tight'>ダッシュボード</h1>
+          <p className='text-muted-foreground'>
+            ようこそ、{user?.username}さん。バトルアイテムの管理状況の概要です。
+          </p>
+        </div>
+        <Button asChild>
+          <Link to="/listeners">
+            リスナー管理へ <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
+
+      {/* Expiring Items Alert */}
+      {(stats?.expiringSoonItems ?? 0) > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>注意</AlertTitle>
+          <AlertDescription>
+            <strong>{stats?.expiringSoonItems}個</strong>のアイテムが24時間以内に期限切れになります。
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Stats Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-8'>
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
         <StatCard
           title='総リスナー数'
           value={stats?.totalListeners ?? 0}
-          icon={<FaUsers />}
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title='有効アイテム総数'
           value={stats?.totalActiveItems ?? 0}
-          icon={<FaBoxOpen />}
+          icon={<Box className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title='24H以内期限切れ'
           value={stats?.expiringSoonItems ?? 0}
-          icon={<FaClock />}
+          icon={<Clock className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
 
-      {/* Item Summary Chart */}
-      <div className='mb-8'>
-        <ItemSummaryChart summary={itemsSummary || []} />
-      </div>
-
-      {/* Recent Listeners or other components */}
-      <div>
-        <h2 className='text-xl font-semibold mb-4'>リスナー一覧</h2>
-        {/* You might want to show a list of listeners here */}
-        {/* <ListenerList /> */}
-        <p>リスナー一覧はリスナー管理ページで確認できます。</p>
-      </div>
+      {/* Item Summary Chart Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>アイテム種類別サマリー</CardTitle>
+          <CardDescription>現在有効なアイテムの内訳です。</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ItemSummaryChart summary={itemsSummary || []} />
+        </CardContent>
+      </Card>
     </div>
   );
 };

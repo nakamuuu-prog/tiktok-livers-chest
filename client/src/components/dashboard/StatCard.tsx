@@ -1,20 +1,25 @@
 import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { cn } from '../../lib/utils';
 
 interface StatCardProps {
   title: string;
   value: number | string;
   icon?: React.ReactNode;
+  className?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon }) => {
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, className }) => {
   return (
-    <div className='bg-white shadow-lg rounded-lg p-4 flex items-center'>
-      {icon && <div className='mr-4 text-3xl text-gray-500'>{icon}</div>}
-      <div>
-        <p className='text-sm text-gray-500'>{title}</p>
-        <p className='text-2xl font-bold'>{value}</p>
-      </div>
-    </div>
+    <Card className={cn("shadow-sm", className)}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        {icon && <div className="text-muted-foreground">{icon}</div>}
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+      </CardContent>
+    </Card>
   );
 };
 

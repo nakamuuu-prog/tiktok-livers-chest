@@ -4,6 +4,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 // Validation Schema
 const schema = yup.object().shape({
@@ -41,81 +47,51 @@ const LoginPage = () => {
   };
 
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
-      <div className='w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md'>
-        <h2 className='text-2xl font-bold text-center text-gray-900'>
-          アカウントにログイン
-        </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-          <div>
-            <label
-              htmlFor='username'
-              className='text-sm font-medium text-gray-700'
-            >
-              ユーザー名
-            </label>
-            <input
-              id='username'
-              type='text'
-              {...register('username')}
-              className={`mt-1 block w-full px-3 py-2 border ${
-                errors.username ? 'border-red-500' : 'border-gray-300'
-              } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-            />
-            {errors.username && (
-              <p className='mt-2 text-sm text-red-600'>
-                {errors.username.message}
-              </p>
+    <div className='flex items-center justify-center min-h-screen bg-secondary'>
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl">ログイン</CardTitle>
+          <CardDescription>
+            ユーザー名とパスワードを入力してアカウントにログインしてください。
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <CardContent className="grid gap-4">
+            {errors.root?.serverError && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>エラー</AlertTitle>
+                <AlertDescription>{errors.root.serverError.message}</AlertDescription>
+              </Alert>
             )}
-          </div>
-          <div>
-            <label
-              htmlFor='password'
-              className='text-sm font-medium text-gray-700'
-            >
-              パスワード
-            </label>
-            <input
-              id='password'
-              type='password'
-              {...register('password')}
-              className={`mt-1 block w-full px-3 py-2 border ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
-              } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-            />
-            {errors.password && (
-              <p className='mt-2 text-sm text-red-600'>
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-
-          {errors.root?.serverError && (
-            <p className='text-sm text-red-600 text-center'>
-              {errors.root.serverError.message}
-            </p>
-          )}
-
-          <div>
-            <button
-              type='submit'
-              disabled={isSubmitting}
-              className='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50'
-            >
+            <div className="grid gap-2">
+              <Label htmlFor="username">ユーザー名</Label>
+              <Input id="username" type="text" {...register('username')} />
+              {errors.username && (
+                <p className='text-sm text-destructive'>{errors.username.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">パスワード</Label>
+              <Input id="password" type="password" {...register('password')} />
+              {errors.password && (
+                <p className='text-sm text-destructive'>{errors.password.message}</p>
+              )}
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'ログイン中...' : 'ログイン'}
-            </button>
-          </div>
+            </Button>
+            <div className="text-center text-sm">
+              アカウントをお持ちでないですか？{" "}
+              <Link to="/register" className="underline">
+                こちらから登録
+              </Link>
+            </div>
+          </CardFooter>
         </form>
-        <p className='text-sm text-center text-gray-600'>
-          アカウントをお持ちでないですか？{' '}
-          <Link
-            to='/register'
-            className='font-medium text-indigo-600 hover:text-indigo-500'
-          >
-            こちらから登録
-          </Link>
-        </p>
-      </div>
+      </Card>
     </div>
   );
 };
