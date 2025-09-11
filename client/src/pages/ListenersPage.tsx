@@ -84,13 +84,15 @@ const ListenersPage: React.FC = () => {
 
       {/* Listeners List */}
       <div className='space-y-4'>
-        {listeners && listeners.length > 0 ? (
-          listeners.map((listener: any) => (
-            <ListenerListItem key={listener.id} listener={listener} />
-          ))
-        ) : (
-          <p>リスナーが登録されていません。</p>
-        )}
+        <ul>
+          {listeners && listeners.length > 0 ? (
+            listeners.map((listener: any) => (
+              <ListenerListItem key={listener.id} listener={listener} />
+            ))
+          ) : (
+            <p>リスナーが登録されていません。</p>
+          )}
+        </ul>
       </div>
     </div>
   );
