@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
+// Import cron jobs
+import { startCronJobs } from './cron/jobs';
+
 // Import routers
 import authRoutes from './routes/auth.routes';
 import listenerRoutes from './routes/listeners.routes';
@@ -52,7 +55,8 @@ async function createInitialAdmin() {
   } catch (error) {
     console.error('Error creating initial admin user:', error);
   } finally {
-    await prisma.$disconnect();
+    // This should not disconnect the main prisma client for the app
+    // await prisma.$disconnect();
   }
 }
 
@@ -92,4 +96,5 @@ app.use((err: any, req: any, res: any, next: any) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   createInitialAdmin();
+  startCronJobs(); // Start the cron jobs
 });
