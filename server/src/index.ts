@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
@@ -16,7 +17,10 @@ import battleItemRoutes from './routes/battleItems.routes';
 import statsRoutes from './routes/stats.routes';
 import adminRoutes from './routes/admin.routes';
 
-dotenv.config();
+// Load environment variables
+dotenv.config({
+  path: path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'development'}`),
+});
 
 const prisma = new PrismaClient();
 
@@ -54,14 +58,11 @@ async function createInitialAdmin() {
     console.log('Initial admin user created successfully.');
   } catch (error) {
     console.error('Error creating initial admin user:', error);
-  } finally {
-    // This should not disconnect the main prisma client for the app
-    // await prisma.$disconnect();
   }
 }
 
 const app = express();
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(helmet());

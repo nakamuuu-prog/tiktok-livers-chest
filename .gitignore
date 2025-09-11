@@ -7,6 +7,8 @@ node_modules/
 
 # Environment variables
 .env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
@@ -19,6 +21,8 @@ node_modules/
 # Database
 *.db
 *.db-journal
+/server/prisma/*.db
+/server/prisma/*.db-journal
 
 # Logs
 npm-debug.log*
