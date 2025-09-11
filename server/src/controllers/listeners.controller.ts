@@ -5,8 +5,7 @@ import prisma from '../utils/prisma';
 // @route   GET /api/listeners
 // @access  Private
 export const getAllListeners = async (req: Request, res: Response) => {
-  // @ts-ignore
-  const userId = req.user.id;
+  const userId = req.user?.userId;
 
   try {
     const listeners = await prisma.listener.findMany({

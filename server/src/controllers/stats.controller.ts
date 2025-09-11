@@ -6,8 +6,7 @@ import { ItemType } from '@prisma/client';
 // ダッシュボードの統計情報を取得
 export const getDashboardStats = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
-    const userId = req.user.id;
+    const userId = req.user?.userId;
 
     const totalListeners = await prisma.listener.count({
       where: { userId },
@@ -50,8 +49,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
 // アイテムごとのサマリーを取得
 export const getItemsSummary = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
-    const userId = req.user.id;
+    const userId = req.user?.userId;
 
     const itemTypes = Object.values(ItemType);
 
