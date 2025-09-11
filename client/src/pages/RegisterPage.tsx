@@ -7,11 +7,11 @@ import { useNavigate, Link } from 'react-router-dom';
 
 // Validation Schema
 const schema = yup.object().shape({
-  username: yup.string().required('Username is required'),
-  password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
+  username: yup.string().required('ユーザー名は必須です'),
+  password: yup.string().min(8, 'パスワードは8文字以上である必要があります').required('パスワードは必須です'),
   confirmPassword: yup.string()
-    .oneOf([yup.ref('password'), undefined], 'Passwords must match')
-    .required('Confirm Password is required'),
+    .oneOf([yup.ref('password'), undefined], 'パスワードが一致しません')
+    .required('確認用パスワードは必須です'),
 });
 
 type FormData = yup.InferType<typeof schema>;
@@ -33,7 +33,7 @@ const RegisterPage = () => {
       await signup(data.username, data.password);
       navigate('/');
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Registration failed. Please try again.';
+      const message = error.response?.data?.message || '登録に失敗しました。もう一度お試しください。';
       setError('root.serverError', { type: 'custom', message });
     }
   };
@@ -41,11 +41,11 @@ const RegisterPage = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-900">Create a new account</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-900">新規アカウント作成</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label htmlFor="username" className="text-sm font-medium text-gray-700">
-              Username
+              ユーザー名
             </label>
             <input
               id="username"
@@ -57,7 +57,7 @@ const RegisterPage = () => {
           </div>
           <div>
             <label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
+              パスワード
             </label>
             <input
               id="password"
@@ -69,7 +69,7 @@ const RegisterPage = () => {
           </div>
           <div>
             <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-              Confirm Password
+              パスワード（確認用）
             </label>
             <input
               id="confirmPassword"
@@ -90,14 +90,14 @@ const RegisterPage = () => {
               disabled={isSubmitting}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {isSubmitting ? 'Registering...' : 'Register'}
+              {isSubmitting ? '登録中...' : '登録'}
             </button>
           </div>
         </form>
         <p className="text-sm text-center text-gray-600">
-          Already have an account?{' '}
+          すでにアカウントをお持ちですか？{' '}
           <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Login here
+            こちらからログイン
           </Link>
         </p>
       </div>

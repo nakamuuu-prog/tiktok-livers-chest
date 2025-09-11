@@ -35,7 +35,7 @@ export const getAllListeners = async (req: Request, res: Response) => {
     res.status(200).json(listenersWithItems);
   } catch (error) {
     console.error('Error fetching listeners:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -47,7 +47,7 @@ export const createListener = async (req: Request, res: Response) => {
   const { name } = req.body;
 
   if (!name) {
-    return res.status(400).json({ message: 'Listener name is required' });
+    return res.status(400).json({ message: 'リスナー名は必須です。' });
   }
 
   try {
@@ -60,7 +60,7 @@ export const createListener = async (req: Request, res: Response) => {
     res.status(201).json(newListener);
   } catch (error) {
     console.error('Error creating listener:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -80,13 +80,13 @@ export const getListenerById = async (req: Request, res: Response) => {
     });
 
     if (!listener) {
-      return res.status(404).json({ message: 'Listener not found' });
+      return res.status(404).json({ message: 'リスナーが見つかりません。' });
     }
 
     res.status(200).json(listener);
   } catch (error) {
     console.error('Error fetching listener:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -99,7 +99,7 @@ export const updateListener = async (req: Request, res: Response) => {
   const { name } = req.body;
 
   if (!name) {
-    return res.status(400).json({ message: 'Name is required' });
+    return res.status(400).json({ message: '名前は必須です。' });
   }
 
   try {
@@ -109,7 +109,7 @@ export const updateListener = async (req: Request, res: Response) => {
     });
 
     if (!existingListener) {
-      return res.status(404).json({ message: 'Listener not found' });
+      return res.status(404).json({ message: 'リスナーが見つかりません。' });
     }
 
     const updatedListener = await prisma.listener.update({
@@ -122,7 +122,7 @@ export const updateListener = async (req: Request, res: Response) => {
     res.status(200).json(updatedListener);
   } catch (error) {
     console.error('Error updating listener:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -140,7 +140,7 @@ export const deleteListener = async (req: Request, res: Response) => {
     });
 
     if (!existingListener) {
-      return res.status(404).json({ message: 'Listener not found' });
+      return res.status(404).json({ message: 'リスナーが見つかりません。' });
     }
 
     await prisma.listener.delete({
@@ -152,6 +152,6 @@ export const deleteListener = async (req: Request, res: Response) => {
     res.status(204).send(); // No Content
   } catch (error) {
     console.error('Error deleting listener:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };

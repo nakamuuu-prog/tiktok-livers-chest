@@ -7,8 +7,8 @@ import { useNavigate, Link } from 'react-router-dom';
 
 // Validation Schema
 const schema = yup.object().shape({
-  username: yup.string().required('Username is required'),
-  password: yup.string().required('Password is required'),
+  username: yup.string().required('ユーザー名は必須です'),
+  password: yup.string().required('パスワードは必須です'),
 });
 
 type FormData = yup.InferType<typeof schema>;
@@ -35,7 +35,7 @@ const LoginPage = () => {
       }
     } catch (error: any) {
       const message =
-        error.response?.data?.message || 'Login failed. Please try again.';
+        error.response?.data?.message || 'ログインに失敗しました。もう一度お試しください。';
       setError('root.serverError', { type: 'custom', message });
     }
   };
@@ -44,7 +44,7 @@ const LoginPage = () => {
     <div className='flex items-center justify-center min-h-screen bg-gray-100'>
       <div className='w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md'>
         <h2 className='text-2xl font-bold text-center text-gray-900'>
-          Login to your account
+          アカウントにログイン
         </h2>
         <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
           <div>
@@ -52,7 +52,7 @@ const LoginPage = () => {
               htmlFor='username'
               className='text-sm font-medium text-gray-700'
             >
-              Username
+              ユーザー名
             </label>
             <input
               id='username'
@@ -73,7 +73,7 @@ const LoginPage = () => {
               htmlFor='password'
               className='text-sm font-medium text-gray-700'
             >
-              Password
+              パスワード
             </label>
             <input
               id='password'
@@ -102,17 +102,17 @@ const LoginPage = () => {
               disabled={isSubmitting}
               className='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50'
             >
-              {isSubmitting ? 'Logging in...' : 'Login'}
+              {isSubmitting ? 'ログイン中...' : 'ログイン'}
             </button>
           </div>
         </form>
         <p className='text-sm text-center text-gray-600'>
-          Don't have an account?{' '}
+          アカウントをお持ちでないですか？{' '}
           <Link
             to='/register'
             className='font-medium text-indigo-600 hover:text-indigo-500'
           >
-            Register here
+            こちらから登録
           </Link>
         </p>
       </div>

@@ -10,7 +10,7 @@ export const checkUsername = async (req: Request, res: Response) => {
   const { username } = req.body;
 
   if (!username) {
-    return res.status(400).json({ message: 'Username is required' });
+    return res.status(400).json({ message: 'ユーザー名は必須です' });
   }
 
   try {
@@ -22,14 +22,14 @@ export const checkUsername = async (req: Request, res: Response) => {
     if (!preRegisteredUser) {
       return res
         .status(404)
-        .json({ message: 'This username is not pre-registered.' });
+        .json({ message: 'このユーザー名は事前登録されていません。' });
     }
 
     // 2. Check if user has already completed registration
     if (preRegisteredUser.isRegistered) {
       return res
         .status(409)
-        .json({ message: 'This username is already registered.' });
+        .json({ message: 'このユーザー名はすでに登録済みです。' });
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -40,16 +40,16 @@ export const checkUsername = async (req: Request, res: Response) => {
       // This case should ideally not be hit if the preRegisteredUser.isRegistered check is robust
       return res
         .status(409)
-        .json({ message: 'This username is already registered.' });
+        .json({ message: 'このユーザー名はすでに登録済みです。' });
     }
 
     // 3. If pre-registered and not yet registered, it's available
     return res
       .status(200)
-      .json({ message: 'Username is available for registration.' });
+      .json({ message: 'このユーザー名は登録可能です。' });
   } catch (error) {
     console.error('Error checking username:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -59,13 +59,13 @@ export const register = async (req: Request, res: Response) => {
   if (!username || !password) {
     return res
       .status(400)
-      .json({ message: 'Username and password are required' });
+      .json({ message: 'ユーザー名とパスワードは必須です。' });
   }
 
   if (password.length < 8) {
     return res
       .status(400)
-      .json({ message: 'Password must be at least 8 characters long' });
+      .json({ message: 'パスワードは8文字以上である必要があります。' });
   }
 
   try {
@@ -76,14 +76,14 @@ export const register = async (req: Request, res: Response) => {
     if (!preRegisteredUser) {
       return res
         .status(403)
-        .json({ message: 'This username is not permitted to register.' });
+        .json({ message: 'このユーザー名は登録を許可されていません。' });
     }
 
     // Check if already registered through the pre-registration entry
     if (preRegisteredUser.isRegistered) {
       return res
         .status(409)
-        .json({ message: 'This username is already registered.' });
+        .json({ message: 'このユーザー名はすでに登録済みです。' });
     }
 
     const existingUser = await prisma.user.findUnique({ where: { username } });
@@ -91,7 +91,7 @@ export const register = async (req: Request, res: Response) => {
       // This case should ideally not be hit if the preRegisteredUser.isRegistered check is robust
       return res
         .status(409)
-        .json({ message: 'This username is already taken.' });
+        .json({ message: 'このユーザー名はすでに使用されています。' });
     }
 
     // Hash password
@@ -126,13 +126,13 @@ export const register = async (req: Request, res: Response) => {
     );
 
     res.status(201).json({
-      message: 'User registered successfully',
+      message: 'ユーザー登録が完了しました。',
       token,
       user: { id: user.id, username: user.username, isAdmin: user.isAdmin },
     });
   } catch (error) {
     console.error('Error during registration:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -142,7 +142,7 @@ export const login = async (req: Request, res: Response) => {
   if (!username || !password) {
     return res
       .status(400)
-      .json({ message: 'Username and password are required' });
+      .json({ message: 'ユーザー名とパスワードは必須です。' });
   }
 
   try {
@@ -151,13 +151,13 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user || !user.password) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: '認証情報が無効です。' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: '認証情報が無効です。' });
     }
 
     // Generate JWT
@@ -168,25 +168,25 @@ export const login = async (req: Request, res: Response) => {
     );
 
     res.status(200).json({
-      message: 'Login successful',
+      message: 'ログインに成功しました。',
       token,
       user: { id: user.id, username: user.username, isAdmin: user.isAdmin },
     });
   } catch (error) {
     console.error('Error during login:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
 export const logout = async (req: Request, res: Response) => {
   // On the client-side, the token should be deleted.
   // Server-side logout for stateless JWT is simply acknowledging the request.
-  res.status(200).json({ message: 'Logout successful' });
+  res.status(200).json({ message: 'ログアウトに成功しました。' });
 };
 
 export const getMe = async (req: Request, res: Response) => {
   if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required' });
+    return res.status(401).json({ message: '認証が必要です。' });
   }
 
   try {
@@ -202,12 +202,12 @@ export const getMe = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'ユーザーが見つかりません。' });
     }
 
     res.status(200).json(user);
   } catch (error) {
     console.error('Error fetching user:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };

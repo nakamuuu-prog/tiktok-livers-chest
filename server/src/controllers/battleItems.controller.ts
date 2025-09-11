@@ -31,7 +31,7 @@ export const getItemsForListener = async (req: Request, res: Response) => {
   try {
     const listener = await checkListenerOwnership(listenerId, userId!);
     if (!listener) {
-      return res.status(404).json({ message: 'Listener not found or access denied' });
+      return res.status(404).json({ message: 'リスナーが見つからないか、アクセスが拒否されました。' });
     }
 
     const items = await prisma.battleItem.findMany({
@@ -42,7 +42,7 @@ export const getItemsForListener = async (req: Request, res: Response) => {
     res.status(200).json(items);
   } catch (error) {
     console.error('Error fetching items for listener:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -55,18 +55,18 @@ export const createBattleItem = async (req: Request, res: Response) => {
 
   // Basic validation
   if (!listenerId || !itemType || !expiryDate) {
-    return res.status(400).json({ message: 'listenerId, itemType, and expiryDate are required' });
+    return res.status(400).json({ message: 'リスナーID、アイテムの種類、有効期限は必須です。' });
   }
 
   // Validate itemType against the enum
   if (!Object.values(ItemType).includes(itemType)) {
-    return res.status(400).json({ message: 'Invalid itemType' });
+    return res.status(400).json({ message: 'アイテムの種類が無効です。' });
   }
 
   try {
     const listener = await checkListenerOwnership(listenerId, userId!);
     if (!listener) {
-      return res.status(404).json({ message: 'Listener not found or access denied' });
+      return res.status(404).json({ message: 'リスナーが見つからないか、アクセスが拒否されました。' });
     }
 
     const newItem = await prisma.battleItem.create({
@@ -80,7 +80,7 @@ export const createBattleItem = async (req: Request, res: Response) => {
     res.status(201).json(newItem);
   } catch (error) {
     console.error('Error creating battle item:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -95,13 +95,13 @@ export const getBattleItemById = async (req: Request, res: Response) => {
     const item = await checkBattleItemOwnership(itemId, userId!);
 
     if (!item) {
-      return res.status(404).json({ message: 'Battle item not found or access denied' });
+      return res.status(404).json({ message: 'バトルアイテムが見つからないか、アクセスが拒否されました。' });
     }
 
     res.status(200).json(item);
   } catch (error) {
     console.error('Error fetching battle item:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -114,18 +114,18 @@ export const updateBattleItem = async (req: Request, res: Response) => {
   const { itemType, expiryDate } = req.body;
 
   if (!itemType || !expiryDate) {
-    return res.status(400).json({ message: 'itemType and expiryDate are required' });
+    return res.status(400).json({ message: 'アイテムの種類と有効期限は必須です。' });
   }
 
   if (!Object.values(ItemType).includes(itemType)) {
-    return res.status(400).json({ message: 'Invalid itemType' });
+    return res.status(400).json({ message: 'アイテムの種類が無効です。' });
   }
 
   try {
     const existingItem = await checkBattleItemOwnership(itemId, userId!);
 
     if (!existingItem) {
-      return res.status(404).json({ message: 'Battle item not found or access denied' });
+      return res.status(404).json({ message: 'バトルアイテムが見つからないか、アクセスが拒否されました。' });
     }
 
     const updatedItem = await prisma.battleItem.update({
@@ -139,7 +139,7 @@ export const updateBattleItem = async (req: Request, res: Response) => {
     res.status(200).json(updatedItem);
   } catch (error) {
     console.error('Error updating battle item:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
 
@@ -154,7 +154,7 @@ export const deleteBattleItem = async (req: Request, res: Response) => {
     const existingItem = await checkBattleItemOwnership(itemId, userId!);
 
     if (!existingItem) {
-      return res.status(404).json({ message: 'Battle item not found or access denied' });
+      return res.status(404).json({ message: 'バトルアイテムが見つからないか、アクセスが拒否されました。' });
     }
 
     await prisma.battleItem.delete({
@@ -164,6 +164,6 @@ export const deleteBattleItem = async (req: Request, res: Response) => {
     res.status(204).send(); // No Content
   } catch (error) {
     console.error('Error deleting battle item:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
