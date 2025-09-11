@@ -1,8 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { BattleItem, ItemType } from '../../services/battleItems.service';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
 
 interface EditItemModalProps {
   item: BattleItem;
@@ -47,30 +51,17 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
   onUpdate,
   isUpdating,
 }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<FormData>({
+  const form = useForm<FormData>({
     resolver: yupResolver(schema),
+    defaultValues: {
+      itemType: item.itemType,
+      expiryDate: (() => {
+        const d = new Date(item.expiryDate);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      })(),
+      expiryHour: new Date(item.expiryDate).getHours(),
+    },
   });
-
-  useEffect(() => {
-    if (item) {
-      reset({
-        itemType: item.itemType,
-        expiryDate: (() => {
-          const d = new Date(item.expiryDate);
-          const year = d.getFullYear();
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        })(),
-        expiryHour: new Date(item.expiryDate).getHours(),
-      });
-    }
-  }, [item, reset, isOpen]);
 
   const onSubmit = (data: FormData) => {
     const combinedDate = new Date(data.expiryDate);
@@ -89,99 +80,93 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
         <h3 className='text-lg font-medium text-gray-900 mb-4'>
           バトルアイテムを編集
         </h3>
-        <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-          <div>
-            <label
-              htmlFor='edit-itemType'
-              className='block text-sm font-medium text-gray-700'
-            >
-              アイテム種別
-            </label>
-            <select
-              id='edit-itemType'
-              {...register('itemType')}
-              className={`mt-1 block w-full pl-3 pr-10 py-2 text-base border-${
-                errors.itemType ? 'border-red-500' : 'gray-300'
-              } focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md`}
-            >
-              {Object.values(ItemType).map((type) => (
-                <option key={type} value={type}>
-                  {itemTranslations[type]}
-                </option>
-              ))}
-            </select>
-            {errors.itemType && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.itemType.message}
-              </p>
-            )}
-          </div>
-          <div className='flex gap-2'>
-            <div className='flex-grow'>
-              <label
-                htmlFor='edit-expiryDate'
-                className='block text-sm font-medium text-gray-700'
-              >
-                有効期限
-              </label>
-              <input
-                type='date'
-                id='edit-expiryDate'
-                {...register('expiryDate')}
-                className={`mt-1 block w-full px-3 py-2 border ${
-                  errors.expiryDate ? 'border-red-500' : 'border-gray-300'
-                } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-              />
-              {errors.expiryDate && (
-                <p className='mt-1 text-sm text-red-600'>
-                  {errors.expiryDate.message}
-                </p>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            <FormField
+              control={form.control}
+              name="itemType"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>アイテム種別</Label>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="アイテムを選択..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(ItemType).map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {itemTranslations[type]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
+            <div className='flex gap-2'>
+              <div className='flex-grow'>
+                <FormField
+                  control={form.control}
+                  name="expiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label>有効期限</Label>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className='w-1/3'>
+                <FormField
+                  control={form.control}
+                  name="expiryHour"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label>時刻</Label>
+                      <Select onValueChange={(val) => field.onChange(parseInt(val, 10))} defaultValue={field.value !== undefined ? String(field.value) : undefined}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="時" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <SelectItem key={i} value={String(i)}>
+                              {i.toString().padStart(2, '0')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
-            <div className='w-1/3'>
-              <label
-                htmlFor='edit-expiryHour'
-                className='block text-sm font-medium text-gray-700'
+            <div className='flex justify-end gap-4 mt-6'>
+              <button
+                type='button'
+                onClick={onClose}
+                className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200'
               >
-                時刻
-              </label>
-              <select
-                id='edit-expiryHour'
-                {...register('expiryHour')}
-                className={`mt-1 block w-full pl-3 pr-10 py-2 text-base border-${
-                  errors.expiryHour ? 'border-red-500' : 'gray-300'
-                } focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md`}
+                キャンセル
+              </button>
+              <button
+                type='submit'
+                disabled={isUpdating}
+                className='px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50'
               >
-                {Array.from({ length: 24 }, (_, i) => (
-                  <option key={i} value={i}>
-                    {i.toString().padStart(2, '0')}
-                  </option>
-                ))}
-              </select>
-              {errors.expiryHour && (
-                <p className='mt-1 text-sm text-red-600'>
-                  {errors.expiryHour.message}
-                </p>
-              )}
+                {isUpdating ? '更新中...' : '更新'}
+              </button>
             </div>
-          </div>
-          <div className='flex justify-end gap-4 mt-6'>
-            <button
-              type='button'
-              onClick={onClose}
-              className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200'
-            >
-              キャンセル
-            </button>
-            <button
-              type='submit'
-              disabled={isUpdating}
-              className='px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50'
-            >
-              {isUpdating ? '更新中...' : '更新'}
-            </button>
-          </div>
-        </form>
+          </form>
+        </Form>
       </div>
     </div>
   );

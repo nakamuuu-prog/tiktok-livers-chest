@@ -136,7 +136,7 @@ const ListenerListItem: React.FC<ListenerListItemProps> = ({ listener }) => {
             <Edit className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDelete(); }} disabled={deleteMutation.isPending}>
-            <Trash className="h-4 w-4" />
+            <Trash className="h-4 w-4 text-destructive" />
           </Button>
           <Button variant="ghost" size="icon">
             {isExpanded ? <ChevronUp /> : <ChevronDown />}
