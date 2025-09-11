@@ -12,6 +12,9 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import MainLayout from './components/common/MainLayout';
 import ListenerDetailPage from './pages/ListenerDetailPage';
 import ListenersPage from './pages/ListenersPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import PreRegisteredUsersPage from './pages/admin/PreRegisteredUsersPage';
+import UserManagementPage from './pages/admin/UserManagementPage';
 import reportWebVitals from './reportWebVitals';
 
 const queryClient = new QueryClient();
@@ -25,7 +28,7 @@ const router = createBrowserRouter([
         element: <MainLayout />,
         children: [
           {
-            index: true,
+            path: '/dashboard',
             element: <DashboardPage />,
           },
           {
@@ -35,6 +38,18 @@ const router = createBrowserRouter([
           {
             path: '/listeners/:id',
             element: <ListenerDetailPage />,
+          },
+          {
+            path: '/admin',
+            element: <AdminDashboardPage />,
+          },
+          {
+            path: '/admin/pre-registered-users',
+            element: <PreRegisteredUsersPage />,
+          },
+          {
+            path: '/admin/users',
+            element: <UserManagementPage />,
           },
         ],
       },

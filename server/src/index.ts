@@ -3,14 +3,58 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 // Import routers
 import authRoutes from './routes/auth.routes';
 import listenerRoutes from './routes/listeners.routes';
 import battleItemRoutes from './routes/battleItems.routes';
 import statsRoutes from './routes/stats.routes';
+import adminRoutes from './routes/admin.routes';
 
 dotenv.config();
+
+const prisma = new PrismaClient();
+
+async function createInitialAdmin() {
+  const adminUsername = process.env.ADMIN_USERNAME;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminUsername || !adminPassword) {
+    console.log(
+      'ADMIN_USERNAME or ADMIN_PASSWORD is not set. Skipping initial admin creation.'
+    );
+    return;
+  }
+
+  try {
+    const existingAdmin = await prisma.user.findUnique({
+      where: { username: adminUsername },
+    });
+
+    if (existingAdmin) {
+      console.log('Admin user already exists.');
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(adminPassword, 12);
+
+    await prisma.user.create({
+      data: {
+        username: adminUsername,
+        password: hashedPassword,
+        isActive: true,
+        isAdmin: true,
+      },
+    });
+    console.log('Initial admin user created successfully.');
+  } catch (error) {
+    console.error('Error creating initial admin user:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
 
 const app = express();
 const PORT = 5001;
@@ -35,7 +79,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/listeners', listenerRoutes);
 app.use('/api/battle-items', battleItemRoutes);
 app.use('/api/stats', statsRoutes);
-app.use('/api/stats', statsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error handling
 app.use((err: any, req: any, res: any, next: any) => {
@@ -45,4 +89,5 @@ app.use((err: any, req: any, res: any, next: any) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  createInitialAdmin();
 });

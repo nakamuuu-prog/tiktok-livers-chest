@@ -4,6 +4,7 @@ import apiClient from '../lib/axios';
 interface User {
   id: number;
   username: string;
+  isAdmin: boolean;
 }
 
 interface AuthResponse {
@@ -13,7 +14,10 @@ interface AuthResponse {
 
 const authService = {
   register: (username: string, password: string) => {
-    return apiClient.post<AuthResponse>('/auth/register', { username, password });
+    return apiClient.post<AuthResponse>('/auth/register', {
+      username,
+      password,
+    });
   },
 
   login: (username: string, password: string) => {
@@ -21,7 +25,9 @@ const authService = {
   },
 
   checkUsername: (username: string) => {
-    return apiClient.post<{ message: string }>('/auth/check-username', { username });
+    return apiClient.post<{ message: string }>('/auth/check-username', {
+      username,
+    });
   },
 
   getMe: () => {

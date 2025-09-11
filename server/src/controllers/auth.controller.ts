@@ -20,7 +20,9 @@ export const checkUsername = async (req: Request, res: Response) => {
     });
 
     if (!preRegisteredUser) {
-      return res.status(404).json({ message: 'This username is not pre-registered.' });
+      return res
+        .status(404)
+        .json({ message: 'This username is not pre-registered.' });
     }
 
     // 2. Check if user has already completed registration
@@ -29,12 +31,15 @@ export const checkUsername = async (req: Request, res: Response) => {
     });
 
     if (existingUser) {
-      return res.status(409).json({ message: 'This username is already registered.' });
+      return res
+        .status(409)
+        .json({ message: 'This username is already registered.' });
     }
 
     // 3. If pre-registered and not yet registered, it's available
-    return res.status(200).json({ message: 'Username is available for registration.' });
-
+    return res
+      .status(200)
+      .json({ message: 'Username is available for registration.' });
   } catch (error) {
     console.error('Error checking username:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -45,23 +50,33 @@ export const register = async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({ message: 'Username and password are required' });
+    return res
+      .status(400)
+      .json({ message: 'Username and password are required' });
   }
 
   if (password.length < 8) {
-    return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    return res
+      .status(400)
+      .json({ message: 'Password must be at least 8 characters long' });
   }
 
   try {
     // Verify username is pre-registered and not already in use
-    const preRegisteredUser = await prisma.preRegisteredUser.findUnique({ where: { username } });
+    const preRegisteredUser = await prisma.preRegisteredUser.findUnique({
+      where: { username },
+    });
     if (!preRegisteredUser) {
-      return res.status(403).json({ message: 'This username is not permitted to register.' });
+      return res
+        .status(403)
+        .json({ message: 'This username is not permitted to register.' });
     }
 
     const existingUser = await prisma.user.findUnique({ where: { username } });
     if (existingUser) {
-      return res.status(409).json({ message: 'This username is already taken.' });
+      return res
+        .status(409)
+        .json({ message: 'This username is already taken.' });
     }
 
     // Hash password
@@ -77,14 +92,17 @@ export const register = async (req: Request, res: Response) => {
     });
 
     // Generate JWT
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign(
+      { userId: user.id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
-    res.status(201).json({ 
-      message: 'User registered successfully', 
+    res.status(201).json({
+      message: 'User registered successfully',
       token,
-      user: { id: user.id, username: user.username }
+      user: { id: user.id, username: user.username, isAdmin: user.isAdmin },
     });
-
   } catch (error) {
     console.error('Error during registration:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -95,7 +113,9 @@ export const login = async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({ message: 'Username and password are required' });
+    return res
+      .status(400)
+      .json({ message: 'Username and password are required' });
   }
 
   try {
@@ -114,14 +134,17 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, isAdmin: user.isAdmin },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
-    res.status(200).json({ 
-      message: 'Login successful', 
+    res.status(200).json({
+      message: 'Login successful',
       token,
-      user: { id: user.id, username: user.username }
+      user: { id: user.id, username: user.username, isAdmin: user.isAdmin },
     });
-
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -145,6 +168,7 @@ export const getMe = async (req: Request, res: Response) => {
       select: {
         id: true,
         username: true,
+        isAdmin: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -155,7 +179,6 @@ export const getMe = async (req: Request, res: Response) => {
     }
 
     res.status(200).json(user);
-
   } catch (error) {
     console.error('Error fetching user:', error);
     res.status(500).json({ message: 'Internal server error' });

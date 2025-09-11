@@ -1,10 +1,18 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+} from 'react';
 import authService from '../services/auth.service';
 
+// Interfaces
 // Interfaces
 interface User {
   id: number;
   username: string;
+  isAdmin: boolean;
 }
 
 interface AuthContextType {
@@ -12,7 +20,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<User>;
   logout: () => void;
   register: (username: string, password: string) => Promise<void>;
 }
@@ -23,7 +31,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Provider
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem('token')
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
           console.error('Token verification failed', error);
           // Clear stored token if it's invalid
-          logout(); 
+          logout();
         }
       }
       setIsLoading(false);
@@ -52,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(token);
     setUser(user);
     localStorage.setItem('token', token);
+    return user;
   };
 
   const register = async (username: string, password: string) => {
