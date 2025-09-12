@@ -76,6 +76,11 @@ app.use(
 app.use(morgan('combined'));
 app.use(express.json());
 
+// Health check route for Render
+app.get('/healthz', (req: Request, res: Response) => {
+  res.status(200).send('OK');
+});
+
 // Routes
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
@@ -94,8 +99,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const port = Number(PORT);
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server listening on http://0.0.0.0:${port}`);
   createInitialAdmin();
   startCronJobs(); // Start the cron jobs
 });
