@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String?
+  isActive  Boolean   @default(false) @map("is_active")
+  isAdmin   Boolean   @default(false) @map("is_admin")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  listeners         Listener[]
+  preRegisteredUser PreRegisteredUser?
+
+  @@map("users")
+}
+
+model PreRegisteredUser {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  isRegistered Boolean   @default(false) @map("is_registered")
+  registeredAt DateTime? @map("registered_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int?  @unique @map("user_id")
+
+  @@map("pre_registered_users")
+}
+
+model Listener {
+  id        Int      @id @default(autoincrement())
+  name      String
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user        User         @relation(fields: [userId], references: [id])
+  battleItems BattleItem[]
+
+  @@index([userId])
+  @@map("listeners")
+}
+
+model BattleItem {
+  id         Int      @id @default(autoincrement())
+  listenerId Int      @map("listener_id")
+  itemType   ItemType @map("item_type")
+  expiryDate DateTime @map("expiry_date")
+  isExpired  Boolean  @default(false) @map("is_expired")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  listener Listener @relation(fields: [listenerId], references: [id], onDelete: Cascade)
+
+  @@index([listenerId])
+  @@index([expiryDate])
+  @@index([itemType])
+  @@map("battle_items")
+}
+
+enum ItemType {
+  GLOVE          @map("グローブ")
+  STUN_HAMMER    @map("スタンハンマー")
+  MIST           @map("ミスト")
+  TIME           @map("タイム")
+  SECOND_BOOSTER @map("2位ブースター")
+  THIRD_BOOSTER  @map("3位ブースター")
+}
