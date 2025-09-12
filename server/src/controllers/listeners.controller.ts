@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Listener, BattleItem } from '@prisma/client';
 import prisma from '../utils/prisma';
 
 // @desc    Get all listeners for the logged-in user
@@ -25,7 +26,8 @@ export const getAllListeners = async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    const listenersWithItems = listeners.map((listener) => {
+    const listenersWithItems = listeners.map(
+      (listener: Listener & { battleItems: BattleItem[] }) => {
       return {
         ...listener,
         activeItemCount: listener.battleItems.length,

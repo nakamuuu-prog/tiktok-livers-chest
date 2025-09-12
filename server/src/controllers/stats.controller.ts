@@ -69,7 +69,7 @@ export const getItemsSummary = async (req: Request, res: Response) => {
     });
 
     const summaryMap = new Map(
-      summary.map((item) => [item.itemType, item._count.id])
+      summary.map((item: { itemType: ItemType; _count: { id: number } }) => [item.itemType, item._count.id])
     );
     const fullSummary = itemTypes.map((type) => ({
       itemType: type,
