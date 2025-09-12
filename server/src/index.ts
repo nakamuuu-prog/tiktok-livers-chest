@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { execSync } from 'child_process';
 
 // Import cron jobs
 import { startCronJobs } from './cron/jobs';
@@ -62,7 +63,6 @@ async function createInitialAdmin() {
 }
 
 const app = express();
-const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(helmet());
@@ -99,10 +99,30 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-const port = Number(PORT);
+// マイグレーションを実行する関数
+const runMigrations = () => {
+  console.log('Running database migrations...');
+  try {
+    // 同期的にマイグレーションコマンドを実行
+    execSync('npx prisma migrate deploy --schema=prisma/schema.postgres.prisma', { stdio: 'inherit' });
+    console.log('Migrations applied successfully.');
+  } catch (error) {
+    console.error('Failed to apply migrations:', error);
+    // マイグレーションに失敗した場合はサーバーを起動せずに終了
+    process.exit(1);
+  }
+};
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server listening on http://0.0.0.0:${port}`);
-  createInitialAdmin();
-  startCronJobs(); // Start the cron jobs
-});
+// サーバーを起動する関数
+const startServer = () => {
+  const port = Number(process.env.PORT || 5001);
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server listening on http://0.0.0.0:${port}`);
+    createInitialAdmin();
+    startCronJobs();
+  });
+};
+
+// メイン処理
+runMigrations(); // まずマイグレーションを実行
+startServer();   // その後、サーバーを起動
