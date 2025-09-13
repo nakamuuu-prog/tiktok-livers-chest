@@ -29,17 +29,13 @@ const itemTranslations: { [key in ItemType]: string } = {
 };
 
 // --- Form Validation Schema ---
-const schema = yup.object().shape({
-  itemType: yup.string().oneOf(Object.values(ItemType)).required('アイテム種別は必須です'),
-  expiryDate: yup.string().required('有効期限日は必須です'),
-  expiryHour: yup.number().min(0).max(23).required('有効期限時刻は必須です'),
+const schema = yup.object({
+  itemType: yup.string().oneOf(Object.values(ItemType)).required(),
+  expiryDate: yup.string().nullable(),
+  expiryHour: yup.number().min(0).max(23).nullable(),
 });
 
-interface FormData {
-  itemType: ItemType;
-  expiryDate: string;
-  expiryHour: number;
-}
+type FormData = yup.InferType<typeof schema>;
 
 // --- Component ---
 const ListenerDetailPage = () => {
@@ -69,7 +65,7 @@ const ListenerDetailPage = () => {
 
   // --- Mutations ---
   const createItemMutation = useMutation({
-    mutationFn: (data: { listenerId: number; itemType: ItemType; expiryDate: string }) =>
+    mutationFn: (data: { listenerId: number; itemType: ItemType; expiryDate?: string }) =>
       battleItemService.createBattleItem(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battleItems', listenerId] });
@@ -99,18 +95,24 @@ const ListenerDetailPage = () => {
 
   // --- Form Handling ---
   const form = useForm<FormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as any,
     defaultValues: {
       itemType: ItemType.GLOVE,
-      expiryDate: '',
-      expiryHour: 12
+      expiryDate: null,
+      expiryHour: null,
     },
   });
 
   const onSubmit = (data: FormData) => {
-    const combinedDate = new Date(data.expiryDate);
-    combinedDate.setHours(data.expiryHour, 0, 0, 0);
-    createItemMutation.mutate({ listenerId, itemType: data.itemType, expiryDate: combinedDate.toISOString() });
+    let expiryDate: string | undefined = undefined;
+    if (data.expiryDate) {
+      const combinedDate = new Date(data.expiryDate);
+      if (data.expiryHour !== null && data.expiryHour !== undefined) {
+        combinedDate.setHours(data.expiryHour, 0, 0, 0);
+      }
+      expiryDate = combinedDate.toISOString();
+    }
+    createItemMutation.mutate({ listenerId, itemType: data.itemType, expiryDate });
   };
 
   // --- Event Handlers ---
@@ -164,7 +166,7 @@ const ListenerDetailPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <Label>アイテム種別</Label>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="アイテムを選択..." />
@@ -190,7 +192,7 @@ const ListenerDetailPage = () => {
                       <FormItem className="flex-grow">
                         <Label>有効期限</Label>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <Input type="date" {...field} value={field.value || ''} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -202,10 +204,10 @@ const ListenerDetailPage = () => {
                     render={({ field }) => (
                       <FormItem className="w-1/3">
                         <Label>時刻</Label>
-                        <Select onValueChange={(val) => field.onChange(parseInt(val, 10))} defaultValue={String(field.value)}>
+                        <Select onValueChange={(val) => field.onChange(val ? parseInt(val, 10) : null)} value={field.value ? String(field.value) : ''}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue />
+                              <SelectValue placeholder="時刻を選択..." />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>

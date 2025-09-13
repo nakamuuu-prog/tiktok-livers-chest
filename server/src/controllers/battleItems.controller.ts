@@ -54,8 +54,8 @@ export const createBattleItem = async (req: Request, res: Response) => {
   const { listenerId, itemType, expiryDate } = req.body;
 
   // Basic validation
-  if (!listenerId || !itemType || !expiryDate) {
-    return res.status(400).json({ message: 'リスナーID、アイテムの種類、有効期限は必須です。' });
+  if (!listenerId || !itemType) {
+    return res.status(400).json({ message: 'リスナーIDとアイテムの種類は必須です。' });
   }
 
   // Validate itemType against the enum
@@ -69,11 +69,16 @@ export const createBattleItem = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'リスナーが見つからないか、アクセスが拒否されました。' });
     }
 
+    // Set default expiry date if not provided
+    const finalExpiryDate = expiryDate
+      ? new Date(expiryDate)
+      : new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days from now
+
     const newItem = await prisma.battleItem.create({
       data: {
         listenerId,
         itemType,
-        expiryDate: new Date(expiryDate),
+        expiryDate: finalExpiryDate,
       },
     });
 

@@ -22,7 +22,7 @@ export interface BattleItem {
 interface CreateBattleItemPayload {
   listenerId: number;
   itemType: ItemType;
-  expiryDate: string; // e.g., 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  expiryDate?: string; // e.g., 'YYYY-MM-DDTHH:mm:ss.sssZ'
 }
 
 interface UpdateBattleItemPayload {
