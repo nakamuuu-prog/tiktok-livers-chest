@@ -88,7 +88,7 @@ const ListenersPage: React.FC = () => {
       </Card>
 
       {/* Listeners List */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {listeners && listeners.data.length > 0 ? (
           listeners.data.map((listener: any) => (
             <ListenerListItem key={listener.id} listener={listener} />
