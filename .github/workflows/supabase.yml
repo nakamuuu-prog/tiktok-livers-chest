@@ -1,11 +1,13 @@
 name: Deploy Supabase Migrations
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - 'server/supabase/migrations/**'
+      - '.github/workflows/supabase.yml'
 
 jobs:
   deploy-migrations:
