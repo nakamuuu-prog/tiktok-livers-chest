@@ -18,19 +18,24 @@ import battleItemRoutes from './routes/battleItems.routes';
 import statsRoutes from './routes/stats.routes';
 import adminRoutes from './routes/admin.routes';
 
-// Load environment variables
-dotenv.config({
-  path: path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'development'}`),
-});
+// Load environment variables from .env file
+dotenv.config();
 
-// Initialize Prisma Client for the application (using the pooled URL)
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL, // This should be the POOLER URL
+// Initialize Prisma Client based on environment
+let prisma: PrismaClient;
+if (process.env.NODE_ENV === 'production') {
+  // Production: Use the DATABASE_URL from environment variables (should be the POOLER URL)
+  prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
     },
-  },
-});
+  });
+} else {
+  // Development: Use the default SQLite connection string from the schema
+  prisma = new PrismaClient();
+}
 
 const app = express();
 
@@ -79,6 +84,16 @@ async function tableExists(name: string): Promise<boolean> {
     );
     return result[0]?.exists || false;
   } catch (error) {
+    // In development with SQLite, schema is not 'public'. This check is mainly for production.
+    if (process.env.NODE_ENV !== 'production') {
+        // A simpler check for SQLite, assuming if this fails, table likely doesn't exist.
+        try {
+            await prisma.$queryRawUnsafe(`SELECT 1 FROM ${name} LIMIT 1`);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
     console.error(`Error checking if table '${name}' exists:`, error);
     return false;
   }
@@ -119,30 +134,32 @@ async function createInitialAdmin() {
   }
 }
 
-// Function to run database migrations
+// Function to run database migrations (only in production)
 const runMigrations = () => {
-  console.log('Running database migrations using direct connection...');
-  try {
-    execSync('npx prisma migrate deploy --schema=prisma/schema.postgres.prisma', {
-      env: {
-        ...process.env,
-        DATABASE_URL: process.env.DIRECT_URL, // Use the direct URL for migrations
-      },
-      stdio: 'inherit',
-    });
-    console.log('Migrations applied successfully.');
-  } catch (error) {
-    console.error('Failed to apply migrations:', error);
-    process.exit(1);
+  if (process.env.NODE_ENV === 'production') {
+    console.log('Running database migrations using direct connection...');
+    try {
+      execSync('npx prisma migrate deploy --schema=prisma/schema.postgres.prisma', {
+        env: {
+          ...process.env,
+          DATABASE_URL: process.env.DIRECT_URL, // Use the direct URL for migrations
+        },
+        stdio: 'inherit',
+      });
+      console.log('Migrations applied successfully.');
+    } catch (error) {
+      console.error('Failed to apply migrations:', error);
+      process.exit(1);
+    }
   }
 };
 
 // Main bootstrap function to orchestrate the startup sequence
 async function bootstrap() {
-  // 1. Run migrations (using the direct URL)
+  // 1. Run migrations (only in production)
   runMigrations();
 
-  // 2. Connect Prisma Client (using the pooled URL)
+  // 2. Connect Prisma Client
   try {
     await prisma.$connect();
     console.log('Prisma Client connected successfully.');
@@ -151,11 +168,13 @@ async function bootstrap() {
     process.exit(1);
   }
 
-  // 3. Create initial data if tables exist
-  if (await tableExists('users')) {
-    await createInitialAdmin();
-  } else {
-    console.warn('[bootstrap] 'users' table not found, skipping initial admin creation.');
+  // 3. Create initial data if tables exist (only in production for now)
+  if (process.env.NODE_ENV === 'production') {
+      if (await tableExists('users')) {
+        await createInitialAdmin();
+      } else {
+        console.warn("[bootstrap] 'users' table not found, skipping initial admin creation.");
+      }
   }
 
   // 4. Start the HTTP server
@@ -165,11 +184,11 @@ async function bootstrap() {
   });
 
   // 5. Start cron jobs (after ensuring tables exist)
-  if (await tableExists('battle_items')) {
-    startCronJobs();
-  } else {
-    console.warn('[bootstrap] 'battle_items' table not found, skipping cron jobs.');
-  }
+    if (process.env.NODE_ENV === 'production' && !(await tableExists('battle_items'))) {
+        console.warn("[bootstrap] 'battle_items' table not found, skipping cron jobs.");
+    } else {
+        startCronJobs();
+    }
 }
 
 // Start the application
