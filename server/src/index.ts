@@ -23,44 +23,14 @@ dotenv.config({
   path: path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'development'}`),
 });
 
-const prisma = new PrismaClient();
-
-async function createInitialAdmin() {
-  const adminUsername = process.env.ADMIN_USERNAME;
-  const adminPassword = process.env.ADMIN_PASSWORD;
-
-  if (!adminUsername || !adminPassword) {
-    console.log(
-      'ADMIN_USERNAME or ADMIN_PASSWORD is not set. Skipping initial admin creation.'
-    );
-    return;
-  }
-
-  try {
-    const existingAdmin = await prisma.user.findUnique({
-      where: { username: adminUsername },
-    });
-
-    if (existingAdmin) {
-      console.log('Admin user already exists.');
-      return;
-    }
-
-    const hashedPassword = await bcrypt.hash(adminPassword, 12);
-
-    await prisma.user.create({
-      data: {
-        username: adminUsername,
-        password: hashedPassword,
-        isActive: true,
-        isAdmin: true,
-      },
-    });
-    console.log('Initial admin user created successfully.');
-  } catch (error) {
-    console.error('Error creating initial admin user:', error);
-  }
-}
+// Initialize Prisma Client for the application (using the pooled URL)
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL, // This should be the POOLER URL
+    },
+  },
+});
 
 const app = express();
 
@@ -76,14 +46,15 @@ app.use(
 app.use(morgan('combined'));
 app.use(express.json());
 
-// Health check route for Render
-app.get('/healthz', (req: Request, res: Response) => {
-  res.status(200).send('OK');
-});
-
-// Routes
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+// Health check route
+app.get('/healthz', async (req: Request, res: Response) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(503).send('Service Unavailable');
+  }
 });
 
 // Mount routers
@@ -99,30 +70,107 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// マイグレーションを実行する関数
-const runMigrations = () => {
-  console.log('Running database migrations...');
+// Helper function to check if a table exists
+async function tableExists(name: string): Promise<boolean> {
   try {
-    // 同期的にマイグレーションコマンドを実行
-    execSync('npx prisma migrate deploy --schema=prisma/schema.postgres.prisma', { stdio: 'inherit' });
+    const result: any[] = await prisma.$queryRawUnsafe(
+      `SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = $1);`,
+      name
+    );
+    return result[0]?.exists || false;
+  } catch (error) {
+    console.error(`Error checking if table '${name}' exists:`, error);
+    return false;
+  }
+}
+
+// Function to create the initial admin user
+async function createInitialAdmin() {
+  const adminUsername = process.env.ADMIN_USERNAME;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminUsername || !adminPassword) {
+    console.log('ADMIN_USERNAME or ADMIN_PASSWORD is not set. Skipping initial admin creation.');
+    return;
+  }
+
+  try {
+    const existingAdmin = await prisma.user.findUnique({
+      where: { username: adminUsername },
+    });
+
+    if (existingAdmin) {
+      console.log('Admin user already exists.');
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(adminPassword, 12);
+    await prisma.user.create({
+      data: {
+        username: adminUsername,
+        password: hashedPassword,
+        isActive: true,
+        isAdmin: true,
+      },
+    });
+    console.log('Initial admin user created successfully.');
+  } catch (error) {
+    console.error('Error creating initial admin user:', error);
+  }
+}
+
+// Function to run database migrations
+const runMigrations = () => {
+  console.log('Running database migrations using direct connection...');
+  try {
+    execSync('npx prisma migrate deploy --schema=prisma/schema.postgres.prisma', {
+      env: {
+        ...process.env,
+        DATABASE_URL: process.env.DIRECT_URL, // Use the direct URL for migrations
+      },
+      stdio: 'inherit',
+    });
     console.log('Migrations applied successfully.');
   } catch (error) {
     console.error('Failed to apply migrations:', error);
-    // マイグレーションに失敗した場合はサーバーを起動せずに終了
     process.exit(1);
   }
 };
 
-// サーバーを起動する関数
-const startServer = () => {
+// Main bootstrap function to orchestrate the startup sequence
+async function bootstrap() {
+  // 1. Run migrations (using the direct URL)
+  runMigrations();
+
+  // 2. Connect Prisma Client (using the pooled URL)
+  try {
+    await prisma.$connect();
+    console.log('Prisma Client connected successfully.');
+  } catch (error) {
+    console.error('Failed to connect Prisma Client:', error);
+    process.exit(1);
+  }
+
+  // 3. Create initial data if tables exist
+  if (await tableExists('users')) {
+    await createInitialAdmin();
+  } else {
+    console.warn('[bootstrap] 'users' table not found, skipping initial admin creation.');
+  }
+
+  // 4. Start the HTTP server
   const port = Number(process.env.PORT || 5001);
   app.listen(port, '0.0.0.0', () => {
     console.log(`Server listening on http://0.0.0.0:${port}`);
-    createInitialAdmin();
-    startCronJobs();
   });
-};
 
-// メイン処理
-runMigrations(); // まずマイグレーションを実行
-startServer();   // その後、サーバーを起動
+  // 5. Start cron jobs (after ensuring tables exist)
+  if (await tableExists('battle_items')) {
+    startCronJobs();
+  } else {
+    console.warn('[bootstrap] 'battle_items' table not found, skipping cron jobs.');
+  }
+}
+
+// Start the application
+bootstrap();

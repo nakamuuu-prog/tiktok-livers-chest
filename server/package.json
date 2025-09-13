@@ -3,16 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate --schema=prisma/schema.postgres.prisma && tsc",
     "start": "node dist/index.js",
     "dev:generate": "prisma generate --schema=prisma/schema.sqlite.prisma",
     "dev:migrate": "prisma migrate dev --schema=prisma/schema.sqlite.prisma",
     "dev": "npm run dev:generate && nodemon src/index.ts",
-    "prod:generate": "prisma generate --schema=prisma/schema.postgres.prisma",
-    "prod:migrate": "prisma migrate deploy --schema=prisma/schema.postgres.prisma",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "postinstall": "prisma generate --schema=prisma/schema.postgres.prisma",
   "keywords": [],
   "author": "",
   "license": "ISC",
