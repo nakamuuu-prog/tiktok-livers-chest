@@ -151,69 +151,32 @@ const ListenerDetailPage = () => {
         </CardHeader>
       </Card>
 
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        {/* Add Item Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>バトルアイテムを追加</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-                <FormField
-                  control={form.control}
-                  name="itemType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label>アイテム種別</Label>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="アイテムを選択..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Object.values(ItemType).map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {itemTranslations[type]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex gap-4">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Add Item Form (Left Side) */}
+        <div className="lg:w-1/3 lg:sticky lg:top-6 h-fit">
+          <Card>
+            <CardHeader>
+              <CardTitle>バトルアイテムを追加</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
                   <FormField
                     control={form.control}
-                    name="expiryDate"
+                    name="itemType"
                     render={({ field }) => (
-                      <FormItem className="flex-grow">
-                        <Label>有効期限</Label>
-                        <FormControl>
-                          <Input type="date" {...field} value={field.value || ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="expiryHour"
-                    render={({ field }) => (
-                      <FormItem className="w-1/3">
-                        <Label>時刻</Label>
-                        <Select onValueChange={(val) => field.onChange(val ? parseInt(val, 10) : null)} value={field.value ? String(field.value) : ''}>
+                      <FormItem>
+                        <Label>アイテム種別</Label>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="時刻を選択..." />
+                              <SelectValue placeholder="アイテムを選択..." />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Array.from({ length: 24 }, (_, i) => (
-                              <SelectItem key={i} value={String(i)}>
-                                {i.toString().padStart(2, '0')}時
+                            {Object.values(ItemType).map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {itemTranslations[type]}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -222,57 +185,98 @@ const ListenerDetailPage = () => {
                       </FormItem>
                     )}
                   />
-                </div>
-                <Button type='submit' disabled={createItemMutation.isPending} className="w-full">
-                  {createItemMutation.isPending ? '追加中...' : 'アイテムを追加'}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                  <div className="flex gap-4">
+                    <FormField
+                      control={form.control}
+                      name="expiryDate"
+                      render={({ field }) => (
+                        <FormItem className="flex-grow">
+                          <Label>有効期限</Label>
+                          <FormControl>
+                            <Input type="date" {...field} value={field.value || ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="expiryHour"
+                      render={({ field }) => (
+                        <FormItem className="w-1/3">
+                          <Label>時刻</Label>
+                          <Select onValueChange={(val) => field.onChange(val ? parseInt(val, 10) : null)} value={field.value ? String(field.value) : ''}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="時刻を選択..." />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Array.from({ length: 24 }, (_, i) => (
+                                <SelectItem key={i} value={String(i)}>
+                                  {i.toString().padStart(2, '0')}時
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <Button type='submit' disabled={createItemMutation.isPending} className="w-full">
+                    {createItemMutation.isPending ? '追加中...' : 'アイテムを追加'}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Items List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>所持アイテム一覧</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingItems && <p>アイテムを読み込み中...</p>}
-            <ul className='space-y-3'>
-              {sortedBattleItems.map((item) => {
-                const isExpired = new Date(item.expiryDate) < new Date();
-                return (
-                  <li
-                    key={item.id}
-                    className={`p-3 rounded-md flex justify-between items-center ${isExpired ? 'bg-destructive/10' : 'bg-secondary'}`}>
-                    <div>
-                      <span className='font-medium'>
-                        {itemTranslations[item.itemType]}
-                      </span>
-                      <p className={`text-sm ${isExpired ? 'text-destructive' : 'text-muted-foreground'}`}>
-                        有効期限:{' '}
-                        {format(new Date(item.expiryDate), 'yyyy/MM/dd HH:mm', { locale: ja })}
-                      </p>
-                    </div>
-                    <div className='flex items-center'>
-                      <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(item.id)} disabled={deleteItemMutation.isPending}>
-                        <Trash className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </li>
-                );
-              })}
-              {battleItems?.length === 0 && (
-                <p className='text-center text-muted-foreground py-4'>
-                  所持しているアイテムはありません。
-                </p>
-              )}
-            </ul>
-          </CardContent>
-        </Card>
+        {/* Items List (Right Side) */}
+        <div className="lg:w-2/3">
+          <Card>
+            <CardHeader>
+              <CardTitle>所持アイテム一覧</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingItems && <p>アイテムを読み込み中...</p>}
+              <ul className='space-y-3'>
+                {sortedBattleItems.map((item) => {
+                  const isExpired = new Date(item.expiryDate) < new Date();
+                  return (
+                    <li
+                      key={item.id}
+                      className={`p-3 rounded-md flex justify-between items-center ${isExpired ? 'bg-destructive/10' : 'bg-secondary'}`}>
+                      <div>
+                        <span className='font-medium'>
+                          {itemTranslations[item.itemType]}
+                        </span>
+                        <p className={`text-sm ${isExpired ? 'text-destructive' : 'text-muted-foreground'}`}>
+                          有効期限:{' '}
+                          {format(new Date(item.expiryDate), 'yyyy/MM/dd HH:mm', { locale: ja })}
+                        </p>
+                      </div>
+                      <div className='flex items-center'>
+                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(item.id)} disabled={deleteItemMutation.isPending}>
+                          <Trash className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })}
+                {battleItems?.length === 0 && (
+                  <p className='text-center text-muted-foreground py-4'>
+                    所持しているアイテムはありません。
+                  </p>
+                )}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
       </div>
       {selectedItem && (
         <EditItemModal
