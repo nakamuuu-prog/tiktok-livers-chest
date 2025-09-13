@@ -8,7 +8,9 @@
     "dev:generate": "prisma generate --schema=prisma/schema.sqlite.prisma",
     "dev:migrate": "prisma migrate dev --schema=prisma/schema.sqlite.prisma",
     "dev": "npm run dev:generate && nodemon src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate:deploy": "DATABASE_URL=$DIRECT_URL prisma migrate deploy --schema prisma/schema.postgres.prisma",
+    "render:start": "npm run migrate:deploy && DATABASE_URL=$POOLER_URL npm run start"
   },
   "keywords": [],
   "author": "",

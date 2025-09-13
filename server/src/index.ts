@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { execSync } from 'child_process';
+
 
 // Import cron jobs
 import { startCronJobs } from './cron/jobs';
@@ -134,32 +134,11 @@ async function createInitialAdmin() {
   }
 }
 
-// Function to run database migrations (only in production)
-const runMigrations = () => {
-  if (process.env.NODE_ENV === 'production') {
-    console.log('Running database migrations using direct connection...');
-    try {
-      execSync('npx prisma migrate deploy --schema=prisma/schema.postgres.prisma', {
-        env: {
-          ...process.env,
-          DATABASE_URL: process.env.DIRECT_URL, // Use the direct URL for migrations
-        },
-        stdio: 'inherit',
-      });
-      console.log('Migrations applied successfully.');
-    } catch (error) {
-      console.error('Failed to apply migrations:', error);
-      process.exit(1);
-    }
-  }
-};
+
 
 // Main bootstrap function to orchestrate the startup sequence
 async function bootstrap() {
-  // 1. Run migrations (only in production)
-  runMigrations();
-
-  // 2. Connect Prisma Client
+  // 1. Connect Prisma Client
   try {
     await prisma.$connect();
     console.log('Prisma Client connected successfully.');
