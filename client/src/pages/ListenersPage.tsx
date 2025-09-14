@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import listenerService from '../services/listeners.service';
+import listenerService, { Listener } from '../services/listeners.service';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -25,6 +25,7 @@ const ListenersPage: React.FC = () => {
   const { data: listeners, isLoading } = useQuery({
     queryKey: ['listeners'],
     queryFn: listenerService.getListeners,
+    select: res => res.data,
   });
 
   const mutation = useMutation({
@@ -89,8 +90,8 @@ const ListenersPage: React.FC = () => {
 
       {/* Listeners List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {listeners && listeners.data.length > 0 ? (
-          listeners.data.map((listener: any) => (
+        {listeners && listeners.length > 0 ? (
+          listeners.map((listener: Listener) => (
             <ListenerListItem key={listener.id} listener={listener} />
           ))
         ) : (

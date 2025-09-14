@@ -17,9 +17,10 @@ const BattleItemList: React.FC<BattleItemListProps> = ({ title, itemType }) => {
     queryFn: () => battleItemService.getActiveItems(itemType).then(res => res.data),
   });
 
-  const { data: listeners, isLoading: isLoadingListeners } = useQuery<Listener[], Error>({
+  const { data: listeners, isLoading: isLoadingListeners } = useQuery({
     queryKey: ['listeners'],
-    queryFn: () => listenerService.getListeners().then(res => res.data),
+    queryFn: listenerService.getListeners,
+    select: res => res.data,
   });
 
   if (isLoadingItems || isLoadingListeners) {
