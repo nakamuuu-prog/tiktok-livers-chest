@@ -51,7 +51,15 @@ export const getItemsSummary = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId;
 
-    const itemTypes = Object.values(ItemType);
+    // Define the desired order
+    const orderedItemTypes: ItemType[] = [
+      ItemType.GLOVE,
+      ItemType.SECOND_BOOSTER,
+      ItemType.THIRD_BOOSTER,
+      ItemType.TIME,
+      ItemType.MIST,
+      ItemType.STUN_HAMMER,
+    ];
 
     const summary = await prisma.battleItem.groupBy({
       by: ['itemType'],
@@ -71,7 +79,9 @@ export const getItemsSummary = async (req: Request, res: Response) => {
     const summaryMap = new Map(
       summary.map((item: { itemType: ItemType; _count: { id: number } }) => [item.itemType, item._count.id])
     );
-    const fullSummary = itemTypes.map((type) => ({
+
+    // Use the ordered array to build the summary
+    const fullSummary = orderedItemTypes.map((type) => ({
       itemType: type,
       count: summaryMap.get(type) || 0,
     }));

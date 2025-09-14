@@ -53,6 +53,9 @@ const battleItemService = {
     return apiClient.put<BattleItem>(`/battle-items/${id}`, payload);
   },
 
+  getActiveItems: (itemType: ItemType) => {
+    return apiClient.get<BattleItem[]>(`/battle-items/active?type=${itemType}`);
+  },
 
   deleteBattleItem: (id: number) => {
     return apiClient.delete(`/battle-items/${id}`);

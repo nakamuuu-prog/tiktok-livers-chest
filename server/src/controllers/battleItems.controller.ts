@@ -222,3 +222,38 @@ export const createMultipleBattleItems = async (req: Request, res: Response) => 
     res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
+
+// @desc    Get all active gloves for the user
+// @route   GET /api/battle-items/gloves/active
+// @access  Private
+export const getActiveItems = async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+  const itemType = req.query.type as ItemType;
+
+  if (!itemType || !Object.values(ItemType).includes(itemType)) {
+    return res.status(400).json({ message: '有効なアイテムタイプを指定してください。' });
+  }
+
+  try {
+    const activeItems = await prisma.battleItem.findMany({
+      where: {
+        listener: {
+          userId: userId,
+        },
+        itemType: itemType,
+        expiryDate: {
+          gt: new Date(),
+        },
+      },
+      orderBy: {
+        expiryDate: 'asc',
+      },
+      take: 5,
+    });
+
+    res.status(200).json(activeItems);
+  } catch (error) {
+    console.error(`Error fetching active ${itemType} items:`, error);
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
+  }
+};

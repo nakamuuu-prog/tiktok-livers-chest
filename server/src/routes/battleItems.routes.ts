@@ -5,6 +5,7 @@ import {
   getBattleItemById,
   updateBattleItem,
   deleteBattleItem,
+  getActiveItems,
 } from '../controllers/battleItems.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 
@@ -15,6 +16,7 @@ router.use(authenticateToken);
 
 router.route('/').post(createBattleItem);
 router.route('/bulk').post(createMultipleBattleItems);
+router.route('/active').get(getActiveItems);
 
 router
   .route('/:id')

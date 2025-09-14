@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getDashboardStats, getItemsSummary } from '../services/stats.service';
 import StatCard from '../components/dashboard/StatCard';
 import ItemSummaryChart from '../components/dashboard/ItemSummaryChart';
+import BattleItemList from '../components/dashboard/BattleItemList';
+import { ItemType } from '../services/battleItems.service';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -84,6 +86,20 @@ const DashboardPage: React.FC = () => {
           <ItemSummaryChart summary={itemsSummary || []} />
         </CardContent>
       </Card>
+
+      {/* Item Lists */}
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <BattleItemList title="グローブ" itemType={ItemType.GLOVE} />
+          <BattleItemList title="2位ブースター" itemType={ItemType.SECOND_BOOSTER} />
+          <BattleItemList title="3位ブースター" itemType={ItemType.THIRD_BOOSTER} />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <BattleItemList title="タイム" itemType={ItemType.TIME} />
+          <BattleItemList title="ミスト" itemType={ItemType.MIST} />
+          <BattleItemList title="スタンハンマー" itemType={ItemType.STUN_HAMMER} />
+        </div>
+      </div>
     </div>
   );
 };
