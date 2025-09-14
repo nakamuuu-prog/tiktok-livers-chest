@@ -3,8 +3,20 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { BattleItem, ItemType } from '../../services/battleItems.service';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '../ui/form';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 
@@ -29,7 +41,7 @@ const schema = yup.object().shape({
   itemType: yup
     .string()
     .oneOf(Object.values(ItemType))
-    .required('アイテム種別は必須です'),
+    .required('アイテムは必須です'),
   expiryDate: yup.string().required('有効期限日は必須です'),
   expiryHour: yup
     .number()
@@ -57,7 +69,10 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
       itemType: item.itemType,
       expiryDate: (() => {
         const d = new Date(item.expiryDate);
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+          2,
+          '0'
+        )}-${String(d.getDate()).padStart(2, '0')}`;
       })(),
       expiryHour: new Date(item.expiryDate).getHours(),
     },
@@ -65,7 +80,8 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
 
   const onSubmit = (data: FormData) => {
     const combinedDate = new Date(data.expiryDate);
-    combinedDate.setHours(data.expiryHour, 0, 0, 0);
+    const originalMinutes = new Date(item.expiryDate).getMinutes();
+    combinedDate.setHours(data.expiryHour, originalMinutes, 0, 0);
     onUpdate({
       itemType: data.itemType,
       expiryDate: combinedDate.toISOString(),
@@ -84,14 +100,17 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
             <FormField
               control={form.control}
-              name="itemType"
+              name='itemType'
               render={({ field }) => (
                 <FormItem>
-                  <Label>アイテム種別</Label>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Label>アイテム</Label>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="アイテムを選択..." />
+                        <SelectValue placeholder='アイテムを選択...' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -110,12 +129,12 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
               <div className='flex-grow'>
                 <FormField
                   control={form.control}
-                  name="expiryDate"
+                  name='expiryDate'
                   render={({ field }) => (
                     <FormItem>
                       <Label>有効期限</Label>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input type='date' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -125,14 +144,23 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
               <div className='w-1/3'>
                 <FormField
                   control={form.control}
-                  name="expiryHour"
+                  name='expiryHour'
                   render={({ field }) => (
                     <FormItem>
                       <Label>時刻</Label>
-                      <Select onValueChange={(val) => field.onChange(parseInt(val, 10))} defaultValue={field.value !== undefined ? String(field.value) : undefined}>
+                      <Select
+                        onValueChange={(val) =>
+                          field.onChange(parseInt(val, 10))
+                        }
+                        defaultValue={
+                          field.value !== undefined
+                            ? String(field.value)
+                            : undefined
+                        }
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="時" />
+                            <SelectValue placeholder='時' />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>

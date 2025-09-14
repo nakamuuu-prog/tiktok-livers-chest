@@ -25,6 +25,12 @@ interface CreateBattleItemPayload {
   expiryDate?: string; // e.g., 'YYYY-MM-DDTHH:mm:ss.sssZ'
 }
 
+interface CreateMultipleBattleItemsPayload {
+  listenerId: number;
+  items: { itemType: ItemType; quantity: number }[];
+  expiryDate?: string;
+}
+
 interface UpdateBattleItemPayload {
   itemType: ItemType;
   expiryDate: string;
@@ -39,9 +45,14 @@ const battleItemService = {
     return apiClient.post<BattleItem>('/battle-items', payload);
   },
 
+  createMultipleBattleItems: (payload: CreateMultipleBattleItemsPayload) => {
+    return apiClient.post<BattleItem[]>('/battle-items/bulk', payload);
+  },
+
   updateBattleItem: (id: number, payload: UpdateBattleItemPayload) => {
     return apiClient.put<BattleItem>(`/battle-items/${id}`, payload);
   },
+
 
   deleteBattleItem: (id: number) => {
     return apiClient.delete(`/battle-items/${id}`);

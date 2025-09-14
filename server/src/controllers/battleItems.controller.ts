@@ -172,3 +172,53 @@ export const deleteBattleItem = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'サーバーエラーが発生しました。' });
   }
 };
+
+// @desc    Create multiple new battle items
+// @route   POST /api/battle-items/bulk
+// @access  Private
+export const createMultipleBattleItems = async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+  const { listenerId, items, expiryDate } = req.body;
+
+  // Basic validation
+  if (!listenerId || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ message: 'リスナーIDとアイテムのリストは必須です。' });
+  }
+
+  try {
+    const listener = await checkListenerOwnership(listenerId, userId!);
+    if (!listener) {
+      return res.status(404).json({ message: 'リスナーが見つからないか、アクセスが拒否されました。' });
+    }
+
+    const finalExpiryDate =
+      expiryDate ? new Date(expiryDate) : new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days from now
+
+    const itemsToCreate = [];
+    for (const item of items) {
+      if (!Object.values(ItemType).includes(item.itemType) || !item.quantity || item.quantity <= 0) {
+        return res.status(400).json({ message: `無効なアイテムデータです: ${item.itemType}` });
+      }
+      for (let i = 0; i < item.quantity; i++) {
+        itemsToCreate.push({
+          listenerId,
+          itemType: item.itemType,
+          expiryDate: finalExpiryDate,
+        });
+      }
+    }
+
+    if (itemsToCreate.length === 0) {
+      return res.status(400).json({ message: '作成する有効なアイテムがありません。' });
+    }
+
+    const result = await prisma.battleItem.createMany({
+      data: itemsToCreate,
+    });
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error('Error creating multiple battle items:', error);
+    res.status(500).json({ message: 'サーバーエラーが発生しました。' });
+  }
+};

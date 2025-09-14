@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   createBattleItem,
+  createMultipleBattleItems,
   getBattleItemById,
   updateBattleItem,
   deleteBattleItem,
@@ -13,6 +14,7 @@ const router = Router();
 router.use(authenticateToken);
 
 router.route('/').post(createBattleItem);
+router.route('/bulk').post(createMultipleBattleItems);
 
 router
   .route('/:id')
