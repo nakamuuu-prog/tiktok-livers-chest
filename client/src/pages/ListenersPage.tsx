@@ -95,11 +95,9 @@ const ListenersPage: React.FC = () => {
             <ListenerListItem key={listener.id} listener={listener} />
           ))
         ) : (
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-center text-muted-foreground">リスナーが登録されていません。</p>
-            </CardContent>
-          </Card>
+          <div className="col-span-1 md:col-span-2 flex justify-center items-center py-12">
+            <p className="text-muted-foreground">リスナーが登録されていません。</p>
+          </div>
         )}
       </div>
     </div>
