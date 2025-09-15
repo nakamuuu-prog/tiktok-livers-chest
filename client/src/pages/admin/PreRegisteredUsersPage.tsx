@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../lib/axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { Spinner } from '@/components/ui/Spinner';
 
 interface PreRegisteredUser {
   id: number;
@@ -93,7 +94,9 @@ const PreRegisteredUsersPage = () => {
       </form>
 
       {loading ? (
-        <p>読み込み中...</p>
+        <div className="flex h-96 items-center justify-center">
+          <Spinner size={48} />
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className='min-w-full bg-white'>

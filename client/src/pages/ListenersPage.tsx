@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../components/ui/form';
+import { Spinner } from '@/components/ui/Spinner';
 
 // Form validation schema
 const schema = yup.object().shape({
@@ -46,7 +47,11 @@ const ListenersPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div>読み込み中...</div>;
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Spinner size={48} />
+      </div>
+    );
   }
 
   return (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../lib/axios';
 import { useAuth } from '../../contexts/AuthContext'; // useAuthをインポート
+import { Spinner } from '@/components/ui/Spinner';
 
 interface User {
   id: number;
@@ -55,7 +56,9 @@ const UserManagementPage = () => {
       <h1 className='text-2xl font-bold mb-4'>ユーザー管理</h1>
       {error && <p className='text-red-500 mb-4'>{error}</p>}
       {loading ? (
-        <p>読み込み中...</p>
+        <div className="flex h-96 items-center justify-center">
+          <Spinner size={48} />
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className='min-w-full bg-white'>

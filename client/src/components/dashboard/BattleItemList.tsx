@@ -1,10 +1,11 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import battleItemService, { BattleItem, ItemType } from '../../services/battleItems.service';
-import listenerService, { Listener } from '../../services/listeners.service';
+import listenerService from '../../services/listeners.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
+import { Spinner } from '@/components/ui/Spinner';
 
 interface BattleItemListProps {
   title: string;
@@ -23,10 +24,6 @@ const BattleItemList: React.FC<BattleItemListProps> = ({ title, itemType }) => {
     select: res => res.data,
   });
 
-  if (isLoadingItems || isLoadingListeners) {
-    return <div>読み込み中...</div>;
-  }
-
   const listenerMap = new Map(listeners?.map(l => [l.id, l.name]));
 
   return (
@@ -35,24 +32,37 @@ const BattleItemList: React.FC<BattleItemListProps> = ({ title, itemType }) => {
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>リスナー</TableHead>
-              <TableHead className="text-right">有効期限</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items?.map(item => (
-              <TableRow key={item.id}>
-                <TableCell>{listenerMap.get(item.listenerId) || '不明'}</TableCell>
-                <TableCell className="text-right">
-                  {format(new Date(item.expiryDate), 'yyyy/MM/dd HH:mm')}
-                </TableCell>
+        {isLoadingItems || isLoadingListeners ? (
+          <div className="flex h-24 items-center justify-center">
+            <Spinner />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>リスナー</TableHead>
+                <TableHead className="text-right">有効期限</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {items?.map(item => (
+                <TableRow key={item.id}>
+                  <TableCell>{listenerMap.get(item.listenerId) || '不明'}</TableCell>
+                  <TableCell className="text-right">
+                    {format(new Date(item.expiryDate), 'yyyy/MM/dd HH:mm')}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {items?.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center text-muted-foreground">
+                    アイテムはありません
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );

@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { AlertTriangle, ArrowRight, Users, Box, Clock } from 'lucide-react';
+import { Spinner } from '@/components/ui/Spinner';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -26,7 +27,11 @@ const DashboardPage: React.FC = () => {
   });
 
   if (isLoadingStats || isLoadingSummary) {
-    return <div>読み込み中...</div>;
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Spinner size={48} />
+      </div>
+    );
   }
 
   return (

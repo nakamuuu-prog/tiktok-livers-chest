@@ -35,6 +35,7 @@ import {
 } from '../components/ui/form';
 import EditItemModal from '../components/items/EditItemModal';
 import { ArrowLeft, Edit, Trash, Plus, Minus } from 'lucide-react';
+import { Spinner } from '@/components/ui/Spinner';
 
 // --- アイテムの日本語訳 ---
 const itemTranslations: { [key in ItemType]: string } = {
@@ -203,7 +204,13 @@ const ListenerDetailPage = () => {
   };
 
   // --- Render ---
-  if (isLoadingListener) return <p>リスナー情報を読み込み中...</p>;
+  if (isLoadingListener) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Spinner size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className='space-y-6'>
@@ -347,62 +354,67 @@ const ListenerDetailPage = () => {
               <CardTitle>所持アイテム一覧</CardTitle>
             </CardHeader>
             <CardContent>
-              {isLoadingItems && <p>アイテムを読み込み中...</p>}
-              <ul className='space-y-3'>
-                {sortedBattleItems.map((item) => {
-                  const isExpired = new Date(item.expiryDate) < new Date();
-                  return (
-                    <li
-                      key={item.id}
-                      className={`p-3 rounded-md flex justify-between items-center ${
-                        isExpired ? 'bg-destructive/10' : 'bg-secondary'
-                      }`}
-                    >
-                      <div>
-                        <span className='font-medium'>
-                          {itemTranslations[item.itemType]}
-                        </span>
-                        <p
-                          className={`text-sm ${
-                            isExpired
-                              ? 'text-destructive'
-                              : 'text-muted-foreground'
-                          }`}
-                        >
-                          有効期限:{' '}
-                          {format(
-                            new Date(item.expiryDate),
-                            'yyyy/MM/dd HH:mm',
-                            { locale: ja }
-                          )}
-                        </p>
-                      </div>
-                      <div className='flex items-center'>
-                        <Button
-                          variant='ghost'
-                          size='icon'
-                          onClick={() => handleEditClick(item)}
-                        >
-                          <Edit className='h-4 w-4' />
-                        </Button>
-                        <Button
-                          variant='ghost'
-                          size='icon'
-                          onClick={() => handleDeleteClick(item.id)}
-                          disabled={deleteItemMutation.isPending}
-                        >
-                          <Trash className='h-4 w-4 text-destructive' />
-                        </Button>
-                      </div>
-                    </li>
-                  );
-                })}
-                {battleItems?.length === 0 && (
-                  <p className='text-center text-muted-foreground py-4'>
-                    所持しているアイテムはありません。
-                  </p>
-                )}
-              </ul>
+              {isLoadingItems ? (
+                <div className="flex h-40 items-center justify-center">
+                  <Spinner />
+                </div>
+              ) : (
+                <ul className='space-y-3'>
+                  {sortedBattleItems.map((item) => {
+                    const isExpired = new Date(item.expiryDate) < new Date();
+                    return (
+                      <li
+                        key={item.id}
+                        className={`p-3 rounded-md flex justify-between items-center ${
+                          isExpired ? 'bg-destructive/10' : 'bg-secondary'
+                        }`}
+                      >
+                        <div>
+                          <span className='font-medium'>
+                            {itemTranslations[item.itemType]}
+                          </span>
+                          <p
+                            className={`text-sm ${
+                              isExpired
+                                ? 'text-destructive'
+                                : 'text-muted-foreground'
+                            }`}
+                          >
+                            有効期限:{' '}
+                            {format(
+                              new Date(item.expiryDate),
+                              'yyyy/MM/dd HH:mm',
+                              { locale: ja }
+                            )}
+                          </p>
+                        </div>
+                        <div className='flex items-center'>
+                          <Button
+                            variant='ghost'
+                            size='icon'
+                            onClick={() => handleEditClick(item)}
+                          >
+                            <Edit className='h-4 w-4' />
+                          </Button>
+                          <Button
+                            variant='ghost'
+                            size='icon'
+                            onClick={() => handleDeleteClick(item.id)}
+                            disabled={deleteItemMutation.isPending}
+                          >
+                            <Trash className='h-4 w-4 text-destructive' />
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                  {battleItems?.length === 0 && !isLoadingItems && (
+                    <p className='text-center text-muted-foreground py-4'>
+                      所持しているアイテムはありません。
+                    </p>
+                  )}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </div>
